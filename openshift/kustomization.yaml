@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Apply everything with:  oc apply -k openshift/
+# (Build the image first: see openshift/README.md)
+commonLabels:
+  app.kubernetes.io/part-of: suptech-xai
+
+resources:
+  - imagestream.yaml
+  - buildconfig.yaml
+  - configmap.yaml
+  - kafka.yaml
+  - fmr.yaml
+  - metrics-api.yaml
+  - dashboard.yaml
+  - pipeline-cronjob.yaml

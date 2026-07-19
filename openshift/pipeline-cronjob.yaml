@@ -1,0 +1,49 @@
+# Scheduled batch run of the full pipeline: ingest -> FMR validation ->
+# wrangle -> classify -> explain -> analytics. Mirrors how a supervisor would
+# process each new reporting cycle. Logs the run summary (and P/R/F1).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: suptech-pipeline
+  labels:
+    app.kubernetes.io/part-of: suptech-xai
+  annotations:
+    image.openshift.io/triggers: |
+      [{"from":{"kind":"ImageStreamTag","name":"suptech-xai:latest"},"fieldPath":"spec.jobTemplate.spec.template.spec.containers[?(@.name==\"pipeline\")].image"}]
+spec:
+  schedule: "0 * * * *"        # hourly; adjust to your reporting cadence
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: suptech-pipeline
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: pipeline
+              image: suptech-xai:latest
+              command: ["python", "run_demo.py", "--count", "2000"]
+              envFrom:
+                - configMapRef:
+                    name: suptech-config
+              volumeMounts:
+                - { name: data, mountPath: /app/data }
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests: { cpu: "100m", memory: "512Mi" }
+                limits: { cpu: "1", memory: "1Gi" }
+          volumes:
+            - name: data
+              emptyDir: {}

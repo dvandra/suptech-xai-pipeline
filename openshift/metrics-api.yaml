@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-api
+  labels:
+    app.kubernetes.io/part-of: suptech-xai
+    app: metrics-api
+  annotations:
+    image.openshift.io/triggers: |
+      [{"from":{"kind":"ImageStreamTag","name":"suptech-xai:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"metrics-api\")].image"},
+       {"from":{"kind":"ImageStreamTag","name":"suptech-xai:latest"},"fieldPath":"spec.template.spec.initContainers[?(@.name==\"pipeline\")].image"}]
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-api
+  template:
+    metadata:
+      labels:
+        app: metrics-api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      # Populate the pipeline artifacts into a per-pod volume before serving.
+      initContainers:
+        - name: pipeline
+          image: suptech-xai:latest
+          command: ["python", "run_demo.py", "--count", "500"]
+          envFrom:
+            - configMapRef:
+                name: suptech-config
+          volumeMounts:
+            - { name: data, mountPath: /app/data }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      containers:
+        - name: metrics-api
+          image: suptech-xai:latest
+          command: ["uvicorn", "analytics.metrics_api:app",
+                    "--host", "0.0.0.0", "--port", "8001"]
+          ports:
+            - containerPort: 8001
+          envFrom:
+            - configMapRef:
+                name: suptech-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - { name: data, mountPath: /app/data }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests: { cpu: "50m", memory: "256Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-api
+  labels:
+    app.kubernetes.io/part-of: suptech-xai
+spec:
+  selector:
+    app: metrics-api
+  ports:
+    - name: http
+      port: 8001
+      targetPort: 8001
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: metrics-api
+  labels:
+    app.kubernetes.io/part-of: suptech-xai
+spec:
+  to:
+    kind: Service
+    name: metrics-api
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

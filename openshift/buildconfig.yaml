@@ -1,0 +1,20 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: suptech-xai
+  labels:
+    app.kubernetes.io/part-of: suptech-xai
+spec:
+  # Binary build: `oc start-build suptech-xai --from-dir=. --follow`
+  # (Swap `source` to a Git ref for an automated pipeline.)
+  source:
+    type: Binary
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: suptech-xai:latest

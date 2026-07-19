@@ -1,0 +1,7 @@
+flowchart LR
+    A["raw_submissions.csv<br/>(SDMX-CSV)"] --> B["validated_submissions.jsonl"]
+    B --> C["wrangled.parquet"]
+    C --> D["classified.jsonl<br/>(+anomaly_score, is_anomaly)"]
+    D --> E["explanations.jsonl<br/>anomaly_report.md"]
+    D --> F["metrics.json<br/>analytics_report.html"]
+    E --> F

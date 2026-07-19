@@ -1,0 +1,29 @@
+# --- Core (required for the local end-to-end demo) ---
+duckdb>=1.0.0
+numpy>=1.26
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2.6
+requests>=2.31
+
+# --- Analytics dashboard (optional: `make dashboard`) ---
+# The static HTML report and metrics API need no extra deps; only the
+# interactive Streamlit dashboard requires this.
+# streamlit>=1.33
+
+# --- Streaming (optional: enables the real Kafka path) ---
+# confluent-kafka>=2.4
+
+# --- Embeddings / vector search (optional: bulk text classification) ---
+# The pipeline falls back to a deterministic hashing vectoriser + numpy search
+# if these are not installed, so it still runs offline.
+# sentence-transformers>=2.7
+# faiss-cpu>=1.8
+
+# --- Explainable AI (optional: local LLM Chain-of-Thought) ---
+# Requires a running Ollama daemon (https://ollama.com) with a local model,
+# e.g. `ollama pull llama3`. Falls back to a deterministic rule-based
+# explainer when unavailable.
+# langchain>=0.2
+# langchain-community>=0.2
+# langchain-ollama>=0.1

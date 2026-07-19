@@ -1,0 +1,49 @@
+# Spins up the "real infrastructure" path for the pipeline:
+#   - Kafka (KRaft mode, no Zookeeper) for event ingestion
+#   - The FMR mock (FastAPI) for SDMX structural validation
+#
+# Designed for Podman (rootless, daemonless) to mirror a secure, air-gapped
+# OpenShift-style deployment, but remains compatible with Docker Compose:
+#   podman compose up -d --build      (or: podman-compose up -d --build)
+#   docker compose up -d --build
+#
+# The local demo (`python run_demo.py`) does NOT require any of this; these
+# services are here to show the containerised deployment.
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    hostname: kafka
+    container_name: suptech-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # --- KRaft (Zookeeper-less) single-node setup ---
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      CLUSTER_ID: "suptech-xai-cluster-0001"
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  fmr-mock:
+    build:
+      context: .
+      dockerfile: Containerfile
+    container_name: suptech-fmr-mock
+    ports:
+      - "8000:8000"
+    command: >
+      uvicorn metadata_registry.fmr_mock_api:app
+      --host 0.0.0.0 --port 8000

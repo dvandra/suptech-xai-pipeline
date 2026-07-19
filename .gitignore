@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Data / build artifacts produced by the pipeline
+data/*.jsonl
+data/*.parquet
+data/*.csv
+data/*.json
+data/*.faiss
+data/reports/
+!data/.gitkeep
+
+# Models cache
+.cache/
+*.bin
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.log

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: suptech-config
+  labels:
+    app.kubernetes.io/part-of: suptech-xai
+data:
+  # In-cluster service addresses. The pipeline uses the FMR over HTTP when it is
+  # reachable, and falls back to in-process validation otherwise.
+  KAFKA_BOOTSTRAP: "kafka:9092"
+  FMR_BASE_URL: "http://fmr:8000"
+  OLLAMA_BASE_URL: "http://ollama:11434"
+  ANOMALY_SIGMA: "1.5"

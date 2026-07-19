@@ -1,0 +1,31 @@
+flowchart TD
+    subgraph Ingestion["Ingestion & Governance (RegTech)"]
+        GEN["data_generator<br/>kafka_producer.py<br/>synthetic SDMX submissions"]
+        KAFKA["Apache Kafka<br/>(SDMX-JSON stream)"]
+        CSV["SDMX-CSV file<br/>raw_submissions.csv"]
+        FMR["metadata_registry<br/>Mock FMR (FastAPI)<br/>SDMX-REST + data/validate"]
+        S1["Stage 1: ingest & validate<br/>reject non-compliant"]
+    end
+
+    subgraph Analytics["Data Wrangling & AI (SupTech)"]
+        S2["Stage 2: DuckDB wrangle<br/>clean, series-key id -> Parquet"]
+        S3["Stage 3: embed + classify<br/>MiniLM / FAISS -> anomaly score"]
+        S4["Stage 4: explain (XAI)<br/>LangChain + Ollama CoT"]
+    end
+
+    subgraph Intelligence["Analytics & AI Evaluation"]
+        S5["Stage 5: analytics<br/>KPIs + P/R/F1 + PSI drift"]
+        API["Metrics REST API"]
+        DASH["Streamlit dashboard"]
+        HTML["Static HTML report"]
+    end
+
+    GEN -->|local| CSV
+    GEN -->|stream| KAFKA
+    CSV --> S1
+    KAFKA --> S1
+    S1 <-->|POST dataset| FMR
+    S1 --> S2 --> S3 --> S4 --> S5
+    S5 --> API
+    S5 --> DASH
+    S5 --> HTML

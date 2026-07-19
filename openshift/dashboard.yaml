@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  labels:
+    app.kubernetes.io/part-of: suptech-xai
+    app: dashboard
+  annotations:
+    image.openshift.io/triggers: |
+      [{"from":{"kind":"ImageStreamTag","name":"suptech-xai:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"dashboard\")].image"},
+       {"from":{"kind":"ImageStreamTag","name":"suptech-xai:latest"},"fieldPath":"spec.template.spec.initContainers[?(@.name==\"pipeline\")].image"}]
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: pipeline
+          image: suptech-xai:latest
+          command: ["python", "run_demo.py", "--count", "500"]
+          envFrom:
+            - configMapRef:
+                name: suptech-config
+          volumeMounts:
+            - { name: data, mountPath: /app/data }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      containers:
+        - name: dashboard
+          image: suptech-xai:latest
+          command: ["streamlit", "run", "dashboard/app.py",
+                    "--server.port=8501", "--server.address=0.0.0.0",
+                    "--server.headless=true"]
+          ports:
+            - containerPort: 8501
+          envFrom:
+            - configMapRef:
+                name: suptech-config
+          readinessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - { name: data, mountPath: /app/data }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests: { cpu: "100m", memory: "512Mi" }
+            limits: { cpu: "1", memory: "1Gi" }
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  labels:
+    app.kubernetes.io/part-of: suptech-xai
+spec:
+  selector:
+    app: dashboard
+  ports:
+    - name: http
+      port: 8501
+      targetPort: 8501
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: dashboard
+  labels:
+    app.kubernetes.io/part-of: suptech-xai
+spec:
+  to:
+    kind: Service
+    name: dashboard
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

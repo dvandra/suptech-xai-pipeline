@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant S1 as Stage 1
+    participant FMR as Mock FMR
+    S1->>FMR: GET /health
+    alt FMR reachable
+        S1->>FMR: POST /ws/public/data/validate (SDMX-CSV)
+        FMR-->>S1: FMR report (Position-indexed errors)
+    else offline
+        S1->>S1: validate_dataset() in-process
+    end
+    S1->>S1: drop rows at invalid positions
+    S1->>S1: write validated_submissions.jsonl
