@@ -71,6 +71,12 @@ detection on the series key — the same classes of checks a real FMR performs.
 
 > Full design write-up (component-by-component, data model, sequence diagrams):
 > **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**.
+>
+> Dataset, models, and LLM use cases (with step-by-step validation):
+> **[`docs/LLM_AND_DATA.md`](docs/LLM_AND_DATA.md)**.
+>
+> Sample developer + analytics report (from a local demo run):
+> **[`docs/sample_reports/dev_analytics_report.md`](docs/sample_reports/dev_analytics_report.md)**.
 
 <details>
 <summary>ASCII fallback diagram</summary>
@@ -309,15 +315,19 @@ suptech-xai-pipeline/
 │   └── embeddings.py             # embedding backends (model + offline fallback)
 ├── analytics/                    # Stage 5 — analytics & AI evaluation
 │   ├── supervisory.py            # DuckDB supervisory KPIs
-│   ├── evaluation.py             # P/R/F1, threshold sweep, faithfulness, LLM-as-judge
+│   ├── evaluation.py             # P/R/F1, CoT step checks, faithfulness, judge
+│   ├── cot_steps.py              # shared STEP1..STEP4 parse + validate helpers
 │   ├── drift.py                  # PSI drift monitoring
 │   ├── report.py                 # self-contained static HTML report
+│   ├── dev_report.py             # developer + analytics markdown report
 │   ├── metrics_api.py            # FastAPI /metrics/* endpoints
 │   └── run_analytics.py          # stage-5 orchestrator
 ├── dashboard/
 │   └── app.py                    # Streamlit analytics dashboard
 ├── docs/
 │   ├── ARCHITECTURE.md           # full design write-up
+│   ├── LLM_AND_DATA.md           # dataset, models, LLM use cases & validation
+│   ├── sample_reports/           # checked-in demo report snapshots
 │   ├── diagrams/                 # mermaid sources (*.mmd)
 │   └── images/                   # rendered SVG diagrams
 └── openshift/                    # OpenShift manifests (ImageStream, BuildConfig,

@@ -147,6 +147,9 @@ OpenShift/CRI-O), and stays Docker-compatible via `make infra-up CONTAINER_ENGIN
 - The DSD is intentionally small and readable, not a full real-world SDMX schema.
 - Data and agency identifiers are simulated and clearly disclaimed.
 
+For dataset shape, model defaults, and the LLM validation loop, see
+[`LLM_AND_DATA.md`](LLM_AND_DATA.md).
+
 ---
 
 ### Regenerating the diagrams
