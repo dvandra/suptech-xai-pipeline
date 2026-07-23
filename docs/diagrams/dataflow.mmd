@@ -3,5 +3,6 @@ flowchart LR
     B --> C["wrangled.parquet"]
     C --> D["classified.jsonl<br/>(+anomaly_score, is_anomaly)"]
     D --> E["explanations.jsonl<br/>anomaly_report.md"]
-    D --> F["metrics.json<br/>analytics_report.html"]
+    D --> F["metrics.json<br/>analytics + dev reports"]
     E --> F
+    G["rag/corpus/*.md"] --> H["rag_results.json<br/>rag_comparison_report.md"]

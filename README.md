@@ -72,6 +72,9 @@ detection on the series key — the same classes of checks a real FMR performs.
 > Full design write-up (component-by-component, data model, sequence diagrams):
 > **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**.
 >
+> Documentation index:
+> **[`docs/README.md`](docs/README.md)**.
+>
 > Dataset, models, and LLM use cases (with step-by-step validation):
 > **[`docs/LLM_AND_DATA.md`](docs/LLM_AND_DATA.md)**.
 >
@@ -124,6 +127,14 @@ data_generator ───────────────► Kafka topic ─�
                        │    detector P/R/F1 + threshold sweep   │──► HTML report
                        │    LLM faithfulness / judge + PSI drift │──► dashboard
                        └──────────────────────────────────────┘
+                                               │ (optional)
+                                               ▼
+                       ┌──────────────────────────────────────┐
+                       │ 6. RAG exploration                     │
+                       │    dense/hybrid/filtered/corrective/   │
+                       │    graph × llama3/mistral/qwen2.5      │──► rag comparison
+                       │    supervisory · risk · treasury Q&A   │    report
+                       └──────────────────────────────────────┘
 ```
 
 </details>
@@ -138,6 +149,7 @@ data_generator ───────────────► Kafka topic ─�
 | Bulk classification    | HuggingFace embeddings (`all-MiniLM-L6-v2`) + **FAISS**     |
 | Explainable AI         | **LangChain** + local **Ollama** (e.g. Llama 3)            |
 | Analytics & AI eval    | DuckDB metrics, P/R/F1 + PSI drift, FastAPI, **Streamlit** |
+| RAG exploration        | Dense / hybrid / filtered / corrective / graph + Ollama matrix |
 | Deployment             | Podman (rootless) + Compose, OpenShift-style; Docker-compatible |
 
 ### Runs offline by design
@@ -153,6 +165,7 @@ pipeline runs with **only the core dependencies** and **no network**:
 | FAISS                     | numpy nearest-centroid search                     |
 | Ollama LLM                | rule-based Chain-of-Thought explainer             |
 | Ollama (LLM-as-judge)     | deterministic rubric-based scorer                 |
+| Ollama (Stage 6 RAG)      | grounded answer listing retrieved chunk IDs       |
 | Streamlit dashboard       | self-contained static HTML analytics report       |
 
 ---
@@ -161,7 +174,9 @@ pipeline runs with **only the core dependencies** and **no network**:
 
 ```bash
 make install          # create .venv and install core deps
-make demo             # run all 5 stages end-to-end on synthetic data
+make demo             # run stages 0–5 end-to-end on synthetic data
+make rag              # Stage 6: multi-retriever × multi-model RAG comparison
+# or: python run_demo.py --with-rag
 ```
 
 Or manually:
@@ -170,6 +185,7 @@ Or manually:
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt          # core deps are uncommented by default
 python run_demo.py --count 500
+python -m rag.run_rag                    # optional Stage 6
 ```
 
 Example output:
@@ -185,11 +201,17 @@ Example output:
 [explain] wrote 29 explanations -> data/reports/anomaly_report.md
 === Stage 5: analytics & AI evaluation ===
 [analytics] detector P/R/F1 = 1.0/1.0/1.0 | LLM validity=1.0 faithfulness=1.0 judge=5.0
+=== Stage 6: RAG & multi-model exploration ===
+[rag] hit@k=0.91 recall@k=0.91 citation=0.75 faithfulness=0.88
 ```
 
 Outputs land in `data/`: the compliance report (`reports/anomaly_report.md`),
-the analytics report (`reports/analytics_report.html`), and machine-readable
-metrics (`metrics.json`).
+the analytics report (`reports/analytics_report.html`), the developer report
+(`reports/dev_analytics_report.md`), the RAG comparison report
+(`reports/rag_comparison_report.md`), and machine-readable metrics
+(`metrics.json`, `rag_results.json`).
+
+Documentation index: **[`docs/README.md`](docs/README.md)**.
 
 ## Running the stages individually
 
@@ -200,6 +222,7 @@ python pipeline/2_wrangle_duckdb.py
 python pipeline/3_embed_classify.py
 python pipeline/4_explain_anomaly.py
 python analytics/run_analytics.py     # stage 5
+python -m rag.run_rag                 # stage 6 (optional)
 ```
 
 ## Enabling the "real infrastructure" path
@@ -290,12 +313,34 @@ make api                              # metrics REST API on :8001
 #   GET /metrics/summary  /metrics/evaluation  /metrics/drift  /metrics/all
 pip install streamlit && make dashboard   # interactive dashboard
 open data/reports/analytics_report.html   # self-contained static report
+open data/reports/dev_analytics_report.md # developer + analytics markdown report
 ```
 
 > On the bundled synthetic data the seeded anomalies are cleanly separable, so
 > the detector and rule-based explainer score near-perfect — the point is that
 > the *harness* proves it. Swapping in the real `all-MiniLM-L6-v2` embeddings
 > and an Ollama LLM produces more nuanced sub-1.0 faithfulness / judge scores.
+
+---
+
+## RAG exploration (Stage 6)
+
+Stage 6 compares **five RAG retrievers** and **three local LLM tags** on
+synthetic questions for **supervisory analysis**, **risk narratives**, and
+**treasury / liquidity** Q&A. Answers must cite retrieved chunk IDs.
+
+| Retrievers | `dense` · `hybrid` · `filtered` · `corrective` · `graph` |
+|---|---|
+| Models | `llama3` · `mistral` · `qwen2.5` (via Ollama, with offline fallback) |
+| Metrics | Hit@k, recall@k, citation rate, term coverage, faithfulness proxy |
+
+```bash
+make rag
+# writes data/rag_results.json + data/reports/rag_comparison_report.md
+```
+
+Full write-up: **[`docs/RAG_AND_MODELS.md`](docs/RAG_AND_MODELS.md)**.  
+Sample report: **[`docs/sample_reports/rag_comparison_report.md`](docs/sample_reports/rag_comparison_report.md)**.
 
 ---
 
@@ -331,6 +376,7 @@ suptech-xai-pipeline/
 ├── dashboard/
 │   └── app.py                    # Streamlit analytics dashboard
 ├── docs/
+│   ├── README.md                 # documentation index
 │   ├── ARCHITECTURE.md           # full design write-up
 │   ├── LLM_AND_DATA.md           # dataset, models, LLM use cases & validation
 │   ├── RAG_AND_MODELS.md         # RAG variants & multi-model exploration
@@ -339,6 +385,9 @@ suptech-xai-pipeline/
 │   └── images/                   # rendered SVG diagrams
 ├── rag/                          # Stage 6 — RAG exploration
 │   ├── corpus/                   # synthetic supervisory/risk/treasury docs
+│   ├── load_corpus.py            # front-matter corpus loader
+│   ├── index.py                  # embeddings + BM25 index
+│   ├── llm.py                    # Ollama / offline grounded answers
 │   ├── retrievers/               # dense, hybrid, filtered, corrective, graph
 │   ├── pipelines/                # question cases for three tracks
 │   ├── evaluate_rag.py           # hit@k, citation, faithfulness proxy

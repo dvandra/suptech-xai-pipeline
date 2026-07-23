@@ -9,9 +9,10 @@
 Commercial banks submit high-frequency statistical returns; the system validates
 them against the international **SDMX** standard via a **Fusion Metadata Registry
 (FMR)**, cleans them, uses **local AI** to classify and flag suspicious activity,
-produces **explainable** justifications for human supervisors, and computes
-**analytics + AI-evaluation metrics** (model quality and drift). Everything runs
-**on-premises / air-gapped** — no data or API calls leave the machine.
+produces **explainable** justifications for human supervisors, computes
+**analytics + AI-evaluation metrics** (model quality and drift), and explores
+**RAG + multi-model LLMs** for supervisory, risk, and treasury Q&A. Everything
+runs **on-premises / air-gapped** — no data or API calls leave the machine.
 
 ## 2. Design philosophy
 
@@ -21,6 +22,7 @@ produces **explainable** justifications for human supervisors, and computes
 | **Embeddings before LLMs** | Bulk classification via vector similarity; LLM only for flagged outliers | LLM-per-row does not scale in cost or latency |
 | **Explainable, not black-box** | Every flag gets a Chain-of-Thought rationale + risk rating | Supervisory decisions must be auditable |
 | **Evaluate & monitor the AI** | The pipeline tests its own models (P/R/F1, faithfulness, PSI drift) | Model-risk management |
+| **Ground LLMs in documents (RAG)** | Multi-retriever × multi-model Q&A over synthetic policy/risk/treasury briefs | Auditable citations for analysis narratives |
 | **On-prem & offline-capable** | Local embeddings, local LLM, and a fallback for every dependency | Sovereign data cannot go to cloud APIs |
 
 ## 3. High-level architecture
@@ -29,7 +31,8 @@ produces **explainable** justifications for human supervisors, and computes
 
 The **governance boundary** is the key architectural line: Stage 1 + the FMR sit
 between the outside world and the analytics core. Nothing crosses into Stages 2–5
-unless it is structurally valid SDMX.
+unless it is structurally valid SDMX. Stage 6 (RAG) is an **adjacent exploration
+layer** over a synthetic document corpus — it does not bypass FMR validation.
 
 ## 4. Data flow (artifacts between stages)
 
@@ -42,7 +45,8 @@ unless it is structurally valid SDMX.
 | 2 Wrangle | validated | `wrangled.parquet` | DuckDB |
 | 3 Classify | parquet | `classified.jsonl` | embeddings + FAISS/numpy |
 | 4 Explain | classified | `explanations.jsonl`, `anomaly_report.md` | LangChain + Ollama |
-| 5 Analytics | classified + explanations | `metrics.json`, `analytics_report.html` | DuckDB + numpy |
+| 5 Analytics | classified + explanations | `metrics.json`, HTML + MD reports | DuckDB + numpy |
+| 6 RAG (optional) | `rag/corpus/*.md` | `rag_results.json`, `rag_comparison_report.md` | retrievers + Ollama |
 
 ## 5. Data model (SDMX DSD)
 
@@ -113,11 +117,24 @@ Writes a human-readable `anomaly_report.md` and a structured `explanations.jsonl
 - `supervisory.py` — KPIs (anomaly rate & flagged value by jurisdiction / asset
   class / institution, FMR rejection rate).
 - `evaluation.py` — detector **precision/recall/F1 + confusion matrix** vs ground
-  truth, a **threshold sweep** to auto-tune σ, and **LLM evaluation** (output
-  validity, faithfulness recall, LLM-as-judge).
+  truth, a **threshold sweep** to auto-tune σ, **per-step CoT validation**, and
+  **LLM evaluation** (output validity, faithfulness recall, LLM-as-judge).
 - `drift.py` — **PSI** drift monitoring with stable/moderate/major bands.
-- `report.py`, `metrics_api.py`, `run_analytics.py`, `dashboard/app.py` — static
-  HTML report, REST metrics API, and Streamlit dashboard.
+- `report.py`, `dev_report.py`, `metrics_api.py`, `run_analytics.py`,
+  `dashboard/app.py` — static HTML report, developer markdown report, REST
+  metrics API, and Streamlit dashboard.
+
+### Stage 6 — RAG exploration (`rag/`)
+Compares **five retrievers** (dense, hybrid, filtered, corrective, graph) and
+**three local LLM tags** (`llama3`, `mistral`, `qwen2.5`) across **three
+question tracks** (supervisory, risk narrative, treasury/liquidity).
+
+- Corpus: synthetic markdown briefs with SDMX-aligned metadata (`rag/corpus/`).
+- Evaluation: hit@k, recall@k, citation rate, term coverage, faithfulness proxy.
+- Outputs: `data/rag_results.json`, `data/reports/rag_comparison_report.md`.
+- Run: `make rag` or `python run_demo.py --with-rag`.
+
+Full detail: [`RAG_AND_MODELS.md`](RAG_AND_MODELS.md).
 
 ## 7. Runs offline by design
 
@@ -127,8 +144,9 @@ Writes a human-readable `anomaly_report.md` and a structured `explanations.jsonl
 | FMR HTTP server | in-process validator (same logic) |
 | sentence-transformers | hashing vectoriser (numpy) |
 | FAISS | numpy nearest-centroid |
-| Ollama LLM | rule-based Chain-of-Thought |
+| Ollama LLM (Stage 4) | rule-based Chain-of-Thought |
 | Ollama judge | deterministic rubric scorer |
+| Ollama (Stage 6 RAG) | grounded answer listing retrieved chunk IDs |
 | Streamlit | static HTML report |
 
 ## 8. Deployment design
@@ -146,9 +164,13 @@ OpenShift/CRI-O), and stays Docker-compatible via `make infra-up CONTAINER_ENGIN
   deployment.
 - The DSD is intentionally small and readable, not a full real-world SDMX schema.
 - Data and agency identifiers are simulated and clearly disclaimed.
+- The RAG corpus is a small synthetic set for comparing retrievers — not a
+  production knowledge base.
 
 For dataset shape, model defaults, and the LLM validation loop, see
-[`LLM_AND_DATA.md`](LLM_AND_DATA.md).
+[`LLM_AND_DATA.md`](LLM_AND_DATA.md). For RAG variants and the multi-model
+matrix, see [`RAG_AND_MODELS.md`](RAG_AND_MODELS.md). Docs index:
+[`README.md`](README.md).
 
 ---
 

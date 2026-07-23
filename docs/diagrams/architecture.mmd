@@ -17,7 +17,14 @@ flowchart TD
         S5["Stage 5: analytics<br/>KPIs + P/R/F1 + PSI drift"]
         API["Metrics REST API"]
         DASH["Streamlit dashboard"]
-        HTML["Static HTML report"]
+        HTML["Static HTML / MD reports"]
+    end
+
+    subgraph RAGLayer["Stage 6: RAG exploration"]
+        CORPUS["rag/corpus<br/>supervisory · risk · treasury"]
+        RET["Retrievers<br/>dense / hybrid / filtered / corrective / graph"]
+        MODELS["LLMs<br/>llama3 · mistral · qwen2.5"]
+        RAGREP["rag_comparison_report.md"]
     end
 
     GEN -->|local| CSV
@@ -29,3 +36,5 @@ flowchart TD
     S5 --> API
     S5 --> DASH
     S5 --> HTML
+    CORPUS --> RET --> MODELS --> RAGREP
+    S5 -.->|optional --with-rag| RET
