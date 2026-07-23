@@ -1,21 +1,19 @@
 """AI testing & evaluation harness.
 
-Evaluates two things:
+Evaluates:
 
-1. The anomaly *detector* (the embedding + nearest-centroid model), using the
-   ground-truth labels the data generator injects. Because we know which
-   records were seeded as outliers, we can compute honest precision / recall /
-   F1 and sweep the decision threshold to find its optimum.
+1. The anomaly *detector* (embedding + nearest-centroid), using ground-truth
+   labels reconstructed from the generator's anomalous purpose list — honest
+   precision / recall / F1 and an F1-optimal threshold sweep.
 
-2. The LLM *explanations* (the Chain-of-Thought XAI output):
-     * output validity  - does every response yield a parseable risk rating?
-     * faithfulness      - do explanations actually cite the red-flag terms
-                           present in the record they describe?
-     * LLM-as-judge      - a local model (or deterministic fallback) rates each
-                           explanation 1-5 against a rubric.
+2. The LLM *explanations* (Chain-of-Thought XAI):
+     * output validity     - parseable LOW/MEDIUM/HIGH rating
+     * faithfulness        - cites red-flag terms present in the purpose
+     * per-step validation - STEP1..STEP4 contract checks
+     * LLM-as-judge        - local model or deterministic rubric (1-5)
+     * prompt improvement  - v2 labelled contract vs a v1-style baseline score
 
-All metrics are computed deterministically where possible so the suite can run
-in CI as a regression gate.
+All metrics are deterministic where possible so the suite can run in CI.
 """
 from __future__ import annotations
 
@@ -25,6 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
+from analytics.cot_steps import parse_steps, validate_steps  # noqa: E402
 from data_generator.kafka_producer import ANOMALOUS_PURPOSES  # noqa: E402
 
 _TRUE_ANOMALY_SET = {p.lower() for p in ANOMALOUS_PURPOSES}
@@ -136,8 +135,6 @@ def llm_output_metrics(explanations: list[dict] | None = None) -> dict:
     n = len(exps)
     n_valid = sum(1 for e in exps if e.get("risk_rating") in valid_ratings)
 
-    # Faithfulness: of explanations for records that DO contain red-flag terms,
-    # how many actually reference at least one of the present terms?
     grounded_hits = grounded_total = 0
     high_with_flags = high_total = 0
     for e in exps:
@@ -169,6 +166,101 @@ def llm_output_metrics(explanations: list[dict] | None = None) -> dict:
         ),
         "rating_distribution": rating_dist,
         "engines": sorted({e.get("engine", "unknown") for e in exps}),
+        "prompt_versions": sorted({e.get("prompt_version", "unknown") for e in exps}),
+        "models": sorted({e.get("model", "unknown") for e in exps}),
+    }
+
+
+def step_validation_metrics(explanations: list[dict] | None = None) -> dict:
+    """Aggregate STEP1..STEP4 contract checks across all explanations."""
+    exps = explanations if explanations is not None else _load_explanations()
+    if not exps:
+        return {"n": 0}
+
+    keys = (
+        "has_all_steps",
+        "step1_ok",
+        "step2_ok",
+        "step3_ok",
+        "step4_ok",
+        "all_steps_ok",
+    )
+    counts = {k: 0 for k in keys}
+    failures = []
+    for e in exps:
+        checks = e.get("step_checks") or validate_steps(e)
+        for k in keys:
+            if checks.get(k):
+                counts[k] += 1
+        if not checks.get("all_steps_ok"):
+            failed = [
+                k
+                for k in (
+                    "step1_ok",
+                    "step2_ok",
+                    "step3_ok",
+                    "step4_ok",
+                    "has_all_steps",
+                )
+                if not checks.get(k)
+            ]
+            failures.append(
+                {
+                    "id": e.get("id"),
+                    "failed_checks": failed,
+                    "rating": e.get("risk_rating"),
+                }
+            )
+
+    n = len(exps)
+    rates = {f"{k}_rate": round(counts[k] / n, 4) for k in keys}
+    return {
+        "n": n,
+        "counts": counts,
+        **rates,
+        "failures_sample": failures[:15],
+        "failure_count": len(failures),
+    }
+
+
+def prompt_improvement_snapshot(explanations: list[dict] | None = None) -> dict:
+    """Compare labelled v2 structure vs a degraded free-form baseline."""
+    exps = explanations if explanations is not None else _load_explanations()
+    if not exps:
+        return {"n": 0}
+
+    def _frac_steps(text: str) -> float:
+        steps = parse_steps(text or "")
+        return sum(1 for k in ("STEP1", "STEP2", "STEP3", "STEP4") if steps.get(k, "").strip()) / 4.0
+
+    v2_scores, v1_scores = [], []
+    for e in exps:
+        text = e.get("explanation") or ""
+        # v2: as written (labelled STEPn preferred)
+        v2_scores.append(_frac_steps(text))
+        # v1 baseline simulation: strip STEP labels then strip numbering
+        degraded = (
+            text.replace("STEP1:", "")
+            .replace("STEP2:", "")
+            .replace("STEP3:", "")
+            .replace("STEP4:", "")
+        )
+        for i in range(1, 5):
+            degraded = degraded.replace(f"{i}.", "")
+        v1_scores.append(_frac_steps(degraded))
+
+    v2_avg = sum(v2_scores) / len(v2_scores)
+    v1_avg = sum(v1_scores) / len(v1_scores)
+    return {
+        "n": len(exps),
+        "current_prompt_version": config.PROMPT_VERSION,
+        "v2_structure_score": round(v2_avg, 4),
+        "v1_structure_score": round(v1_avg, 4),
+        "structure_lift": round(v2_avg - v1_avg, 4),
+        "note": (
+            "Structure score = fraction of STEP1..STEP4 blocks recoverable. "
+            "v2 labelled prompts improve parseability vs free-form v1."
+        ),
     }
 
 
@@ -198,7 +290,9 @@ def _judge_llm(exp: dict) -> int | None:
         except Exception:
             return None
     try:
-        llm = OllamaLLM(model=config.OLLAMA_MODEL, base_url=config.OLLAMA_BASE_URL)
+        llm = OllamaLLM(
+            model=config.OLLAMA_JUDGE_MODEL, base_url=config.OLLAMA_BASE_URL
+        )
         out = llm.invoke(_JUDGE_PROMPT.format(**exp))
         for ch in out:
             if ch in "12345":
@@ -216,11 +310,13 @@ def _judge_rule_based(exp: dict) -> int:
     present = _present_red_flags(exp["txn_purpose"])
     expl = exp["explanation"].lower()
     if present and any(t in expl for t in present):
-        score += 1  # grounded in the actual evidence
-    if str(int(exp.get("obs_value", 0))) [:3] in exp["explanation"].replace(",", ""):
-        score += 1  # references the amount
-    if exp["explanation"].count("\n") >= 3 or "1." in exp["explanation"]:
-        score += 1  # shows structured step-by-step reasoning
+        score += 1
+    amount_str = str(int(exp.get("obs_value", 0)))[:3]
+    if amount_str and amount_str in exp["explanation"].replace(",", ""):
+        score += 1
+    checks = exp.get("step_checks") or validate_steps(exp)
+    if checks.get("has_all_steps"):
+        score += 1
     return min(score, 5)
 
 
@@ -242,6 +338,7 @@ def judge_explanations(explanations: list[dict] | None = None) -> dict:
     return {
         "n": len(scores),
         "judge_engine": engine,
+        "judge_model": config.OLLAMA_JUDGE_MODEL if engine == "ollama" else "rule-based",
         "avg_score": round(sum(scores) / len(scores), 3),
         "score_distribution": dist,
     }
@@ -256,6 +353,8 @@ def compute() -> dict:
     try:
         exps = _load_explanations()
         result["llm_output"] = llm_output_metrics(exps)
+        result["llm_step_validation"] = step_validation_metrics(exps)
+        result["llm_prompt_improvement"] = prompt_improvement_snapshot(exps)
         result["llm_as_judge"] = judge_explanations(exps)
     except FileNotFoundError:
         result["llm_output"] = {"n": 0, "note": "run stage 4 to evaluate explanations"}

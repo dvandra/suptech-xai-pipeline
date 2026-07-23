@@ -9,50 +9,31 @@ human-readable rationale rather than an opaque score.
   * Fallback: a deterministic, rule-based CoT explainer so the report is still
     generated when no LLM runtime is present.
 
-Output is a Markdown compliance report at ``data/reports/anomaly_report.md``.
+Prompt versions (``config.PROMPT_VERSION``):
+  * v1 - free-form numbered steps
+  * v2 - labelled STEP1..STEP4 contract (default; easier to validate)
+
+Output:
+  * ``data/reports/anomaly_report.md``
+  * ``data/explanations.jsonl`` (includes parsed steps + prompt_version)
 """
 from __future__ import annotations
 
 import json
-import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
-
-_RATING_RE = re.compile(r"\b(LOW|MEDIUM|HIGH)\b")
-
-
-def _parse_rating(text: str) -> str:
-    """Extract the risk rating from an explanation (last mention wins)."""
-    matches = _RATING_RE.findall(text.upper())
-    return matches[-1] if matches else "UNRATED"
-
-COT_PROMPT = """You are a financial supervision assistant for a central bank.
-Analyse the following transaction submission and explain, step by step, whether
-it is anomalous and why. Be precise and auditable.
-
-Transaction:
-- ID: {id}
-- Reporting area: {ref_area}
-- Institution: {institution_id}
-- Asset class: {asset_class}
-- Period: {time_period}
-- Amount: {obs_value} {currency}
-- Stated purpose: "{txn_purpose}"
-- Model-assigned category: {predicted_category}
-- Anomaly score (distance to nearest category centroid): {anomaly_score}
-
-Reason step by step:
-1. Assess whether the stated purpose is consistent with the asset class.
-2. Assess whether the amount is plausible for this kind of activity.
-3. Note any red-flag language (e.g. sanctions evasion, structuring, layering).
-4. Conclude with a clear risk rating (LOW / MEDIUM / HIGH) and recommended action.
-"""
+from analytics.cot_steps import (  # noqa: E402
+    parse_rating,
+    parse_steps,
+    prompt_for_version,
+    validate_steps,
+)
 
 
-def _ollama_explain(rec: dict) -> str | None:
+def _ollama_explain(rec: dict, prompt_version: str) -> str | None:
     try:
         from langchain_ollama import OllamaLLM
     except Exception:
@@ -62,7 +43,8 @@ def _ollama_explain(rec: dict) -> str | None:
             return None
     try:
         llm = OllamaLLM(model=config.OLLAMA_MODEL, base_url=config.OLLAMA_BASE_URL)
-        return llm.invoke(COT_PROMPT.format(**rec)).strip()
+        template = prompt_for_version(prompt_version)
+        return llm.invoke(template.format(**rec)).strip()
     except Exception as exc:
         print(f"[explain] Ollama unavailable ({exc}); using rule-based fallback")
         return None
@@ -83,28 +65,50 @@ _RED_FLAGS = [
 
 
 def _rule_based_explain(rec: dict) -> str:
+    """Deterministic CoT that already obeys the v2 STEP labels."""
     purpose = str(rec["txn_purpose"]).lower()
     hits = [msg for kw, msg in _RED_FLAGS if kw in purpose]
+    cited = [kw for kw, _ in _RED_FLAGS if kw in purpose]
     large = rec["obs_value"] >= 50_000_000
 
-    steps = [
-        f"1. The stated purpose is categorised as `{rec['predicted_category']}`; "
+    step1 = (
+        f"The stated purpose is categorised as `{rec['predicted_category']}`; "
         f"its wording sits far from typical {rec['asset_class']} activity "
-        f"(anomaly score {rec['anomaly_score']}, above the alert threshold).",
-        f"2. The amount is {rec['obs_value']:,.0f} {rec['currency']}, which is "
-        + ("unusually large for this activity type." if large else "within a plausible range, so magnitude alone is not decisive."),
-    ]
+        f"(anomaly score {rec['anomaly_score']}, above the alert threshold)."
+    )
+    step2 = (
+        f"The amount is {rec['obs_value']:,.0f} {rec['currency']}, which is "
+        + (
+            "unusually large for this activity type."
+            if large
+            else "within a plausible range, so magnitude alone is not decisive."
+        )
+    )
     if hits:
-        steps.append("3. Red-flag language detected: " + "; ".join(hits) + ".")
-        rating, action = "HIGH", "Escalate to the AML/financial-crime unit and file for review."
+        step3 = "Red-flag language detected (" + ", ".join(cited) + "): " + "; ".join(hits) + "."
+        rating, action = (
+            "HIGH",
+            "Escalate to the AML/financial-crime unit and file for review.",
+        )
     elif large:
-        steps.append("3. No explicit red-flag language, but the size warrants scrutiny.")
-        rating, action = "MEDIUM", "Request supporting documentation from the institution."
+        step3 = "No explicit red-flag language, but the size warrants scrutiny."
+        rating, action = (
+            "MEDIUM",
+            "Request supporting documentation from the institution.",
+        )
     else:
-        steps.append("3. No explicit red-flag language identified.")
-        rating, action = "MEDIUM", "Queue for analyst confirmation of the semantic outlier."
-    steps.append(f"4. Risk rating: **{rating}**. Recommended action: {action}")
-    return "\n".join(steps)
+        step3 = "No explicit red-flag language identified."
+        rating, action = (
+            "MEDIUM",
+            "Queue for analyst confirmation of the semantic outlier.",
+        )
+    step4 = f"Risk rating: {rating}. Recommended action: {action}"
+    return (
+        f"STEP1: {step1}\n"
+        f"STEP2: {step2}\n"
+        f"STEP3: {step3}\n"
+        f"STEP4: {step4}"
+    )
 
 
 def run() -> dict:
@@ -112,6 +116,7 @@ def run() -> dict:
     if not config.CLASSIFIED_JSONL.exists():
         sys.exit(f"{config.CLASSIFIED_JSONL} not found. Run stage 3 first.")
 
+    prompt_version = config.PROMPT_VERSION
     anomalies = []
     with config.CLASSIFIED_JSONL.open() as fh:
         for line in fh:
@@ -123,50 +128,75 @@ def run() -> dict:
         "# SupTech-XAI Anomaly Report",
         "",
         f"Dataflow: `{config.DATAFLOW_REF}`  ",
+        f"Prompt version: `{prompt_version}`  ",
+        f"Explain model: `{config.OLLAMA_MODEL}` (fallback: rule-based)  ",
         f"Flagged observations: **{len(anomalies)}**",
         "",
-        "Each explanation is produced by Chain-of-Thought reasoning over a "
-        "local model, keeping supervisory data on-premises.",
+        "Each explanation uses a four-step Chain-of-Thought contract "
+        "(purpose vs asset class → amount → red flags → rating/action).",
         "",
     ]
 
     used_llm = False
     structured = []
+    step_pass = 0
     for rec in anomalies:
-        explanation = _ollama_explain(rec)
+        explanation = _ollama_explain(rec, prompt_version)
         if explanation is None:
             explanation = _rule_based_explain(rec)
             engine = "rule-based"
         else:
             used_llm = True
             engine = "ollama"
-        rating = _parse_rating(explanation)
+        rating = parse_rating(explanation)
+        steps = parse_steps(explanation)
+        row = {
+            "id": rec["id"],
+            "ref_area": rec["ref_area"],
+            "institution_id": rec.get("institution_id"),
+            "asset_class": rec["asset_class"],
+            "time_period": rec.get("time_period"),
+            "obs_value": rec["obs_value"],
+            "currency": rec["currency"],
+            "txn_purpose": rec["txn_purpose"],
+            "predicted_category": rec["predicted_category"],
+            "anomaly_score": rec["anomaly_score"],
+            "risk_rating": rating,
+            "explanation": explanation,
+            "steps": steps,
+            "engine": engine,
+            "prompt_version": prompt_version,
+            "model": config.OLLAMA_MODEL if engine == "ollama" else "rule-based",
+        }
+        checks = validate_steps(row)
+        row["step_checks"] = {
+            k: checks[k]
+            for k in (
+                "has_all_steps",
+                "step1_ok",
+                "step2_ok",
+                "step3_ok",
+                "step4_ok",
+                "all_steps_ok",
+            )
+        }
+        if checks["all_steps_ok"]:
+            step_pass += 1
+
         lines += [
             f"## {rec['id']} - {rec['ref_area']} / {rec['asset_class']}",
             f"**Amount:** {rec['obs_value']:,.2f} {rec['currency']}  ",
             f"**Stated purpose:** {rec['txn_purpose']}  ",
-            f"**Anomaly score:** {rec['anomaly_score']} | **Risk rating:** {rating}",
+            f"**Anomaly score:** {rec['anomaly_score']} | **Risk rating:** {rating}  ",
+            f"**Step validation:** "
+            f"{'PASS' if checks['all_steps_ok'] else 'FAIL'}",
             "",
             explanation,
             "",
             "---",
             "",
         ]
-        structured.append(
-            {
-                "id": rec["id"],
-                "ref_area": rec["ref_area"],
-                "asset_class": rec["asset_class"],
-                "obs_value": rec["obs_value"],
-                "currency": rec["currency"],
-                "txn_purpose": rec["txn_purpose"],
-                "predicted_category": rec["predicted_category"],
-                "anomaly_score": rec["anomaly_score"],
-                "risk_rating": rating,
-                "explanation": explanation,
-                "engine": engine,
-            }
-        )
+        structured.append(row)
 
     config.ANOMALY_REPORT.write_text("\n".join(lines))
     with config.EXPLANATIONS_JSONL.open("w") as fh:
@@ -175,10 +205,16 @@ def run() -> dict:
 
     engine = "Ollama LLM" if used_llm else "rule-based fallback"
     print(
-        f"[explain] wrote {len(anomalies)} explanations ({engine}) "
+        f"[explain] wrote {len(anomalies)} explanations ({engine}, prompt={prompt_version}) "
+        f"step-pass={step_pass}/{len(anomalies)} "
         f"-> {config.ANOMALY_REPORT}, {config.EXPLANATIONS_JSONL}"
     )
-    return {"anomalies": len(anomalies), "engine": engine}
+    return {
+        "anomalies": len(anomalies),
+        "engine": engine,
+        "prompt_version": prompt_version,
+        "step_pass": step_pass,
+    }
 
 
 if __name__ == "__main__":

@@ -30,6 +30,7 @@ EXPLANATIONS_JSONL = DATA_DIR / "explanations.jsonl"
 # Stage 5 (analytics) outputs.
 METRICS_JSON = DATA_DIR / "metrics.json"
 ANALYTICS_HTML = REPORTS_DIR / "analytics_report.html"
+DEV_ANALYTICS_MD = REPORTS_DIR / "dev_analytics_report.md"
 
 # --- Kafka -----------------------------------------------------------------
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "localhost:9092")
@@ -103,6 +104,10 @@ ANOMALY_SIGMA = float(os.getenv("ANOMALY_SIGMA", "1.5"))
 # --- Local LLM (Ollama) ----------------------------------------------------
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+# Optional separate judge model; defaults to the explainer model.
+OLLAMA_JUDGE_MODEL = os.getenv("OLLAMA_JUDGE_MODEL", OLLAMA_MODEL)
+# CoT prompt contract: v2 requires labelled STEP1..STEP4 blocks (see docs/LLM_AND_DATA.md).
+PROMPT_VERSION = os.getenv("PROMPT_VERSION", "v2")
 
 
 def ensure_dirs() -> None:
