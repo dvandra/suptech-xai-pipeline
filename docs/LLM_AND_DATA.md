@@ -2,7 +2,8 @@
 
 This document is the source of truth for **what data** the pipeline uses,
 **which models** run where, and **how LLMs are applied, validated, and
-improved** — independent of any particular employer or vacancy.
+improved**.
+
 
 ---
 
