@@ -2,13 +2,14 @@
 #   make infra-up CONTAINER_ENGINE="docker"
 CONTAINER_ENGINE ?= podman
 
-.PHONY: help install demo analytics api dashboard produce fmr clean infra-up infra-down oc-build oc-deploy oc-undeploy
+.PHONY: help install demo analytics rag api dashboard produce fmr clean infra-up infra-down oc-build oc-deploy oc-undeploy
 
 help:
 	@echo "Targets:"
 	@echo "  install     Create .venv and install core dependencies"
 	@echo "  demo        Run the full pipeline end-to-end locally (no external services)"
 	@echo "  analytics   Recompute analytics + AI-evaluation metrics and HTML/MD reports"
+	@echo "  rag         Stage 6: multi-retriever × multi-model RAG comparison"
 	@echo "  api         Serve the metrics API (http://localhost:8001)"
 	@echo "  dashboard   Launch the Streamlit analytics dashboard"
 	@echo "  fmr         Run the FMR mock API server (http://localhost:8000)"
@@ -30,6 +31,9 @@ demo:
 
 analytics:
 	python3 analytics/run_analytics.py
+
+rag:
+	python3 -m rag.run_rag
 
 api:
 	uvicorn analytics.metrics_api:app --reload --port 8001
@@ -60,4 +64,4 @@ oc-undeploy:
 	oc delete -k openshift/ --ignore-not-found
 
 clean:
-	rm -rf data/*.jsonl data/*.parquet data/*.csv data/*.json data/reports/*.md data/reports/*.html
+	rm -rf data/*.jsonl data/*.parquet data/*.csv data/*.json data/rag_index data/reports/*.md data/reports/*.html

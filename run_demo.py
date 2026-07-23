@@ -5,7 +5,7 @@ no containers, no Ollama). Each stage still uses its real implementation; where 
 heavy/optional dependency is missing it transparently falls back so the whole
 flow completes and produces a compliance report.
 
-    python run_demo.py [--count N]
+    python run_demo.py [--count N] [--with-rag]
 
 Stages:
     0. Generate mock SDMX submissions (with injected invalid + anomalous rows)
@@ -14,6 +14,7 @@ Stages:
     3. Embed + classify + score anomalies
     4. Explain flagged anomalies via Chain-of-Thought
     5. Analytics + AI evaluation (detector P/R/F1, LLM faithfulness, drift)
+    6. RAG exploration (optional via --with-rag): multi-retriever × multi-model
 """
 from __future__ import annotations
 
@@ -42,6 +43,11 @@ def main():
     ap.add_argument("--invalid-rate", type=float, default=0.12)
     ap.add_argument("--anomaly-rate", type=float, default=0.06)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument(
+        "--with-rag",
+        action="store_true",
+        help="Also run Stage 6 RAG comparison (retrievers × models)",
+    )
     args = ap.parse_args()
 
     config.ensure_dirs()
@@ -77,6 +83,14 @@ def main():
     det = metrics["evaluation"]["detection"]
     steps = metrics["evaluation"].get("llm_step_validation", {})
 
+    rag_overall = None
+    if args.with_rag:
+        print("\n=== Stage 6: RAG & multi-model exploration ===")
+        from rag.run_rag import run as run_rag
+
+        rag_payload = run_rag()
+        rag_overall = rag_payload.get("summary", {}).get("overall", {})
+
     print("\n=== Summary ===")
     print(f"  submissions ingested : {ingest['total']}")
     print(f"  rejected by FMR      : {ingest['rejected']}")
@@ -90,6 +104,12 @@ def main():
     print(f"  analytics report     : {config.ANALYTICS_HTML}")
     print(f"  dev+analytics report : {config.DEV_ANALYTICS_MD}")
     print(f"  metrics json         : {config.METRICS_JSON}")
+    if rag_overall is not None:
+        print(
+            f"  RAG hit@k / faith    : {rag_overall.get('hit_at_k')} / "
+            f"{rag_overall.get('faithfulness_proxy')}"
+        )
+        print(f"  RAG comparison report: {config.RAG_COMPARISON_MD}")
 
 
 if __name__ == "__main__":

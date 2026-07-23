@@ -75,8 +75,14 @@ detection on the series key — the same classes of checks a real FMR performs.
 > Dataset, models, and LLM use cases (with step-by-step validation):
 > **[`docs/LLM_AND_DATA.md`](docs/LLM_AND_DATA.md)**.
 >
+> RAG variants & multi-model exploration (supervisory / risk / treasury):
+> **[`docs/RAG_AND_MODELS.md`](docs/RAG_AND_MODELS.md)**.
+>
 > Sample developer + analytics report (from a local demo run):
 > **[`docs/sample_reports/dev_analytics_report.md`](docs/sample_reports/dev_analytics_report.md)**.
+>
+> Sample RAG comparison report:
+> **[`docs/sample_reports/rag_comparison_report.md`](docs/sample_reports/rag_comparison_report.md)**.
 
 <details>
 <summary>ASCII fallback diagram</summary>
@@ -327,9 +333,17 @@ suptech-xai-pipeline/
 ├── docs/
 │   ├── ARCHITECTURE.md           # full design write-up
 │   ├── LLM_AND_DATA.md           # dataset, models, LLM use cases & validation
+│   ├── RAG_AND_MODELS.md         # RAG variants & multi-model exploration
 │   ├── sample_reports/           # checked-in demo report snapshots
 │   ├── diagrams/                 # mermaid sources (*.mmd)
 │   └── images/                   # rendered SVG diagrams
+├── rag/                          # Stage 6 — RAG exploration
+│   ├── corpus/                   # synthetic supervisory/risk/treasury docs
+│   ├── retrievers/               # dense, hybrid, filtered, corrective, graph
+│   ├── pipelines/                # question cases for three tracks
+│   ├── evaluate_rag.py           # hit@k, citation, faithfulness proxy
+│   ├── run_rag.py                # multi-retriever × multi-model runner
+│   └── report.py                 # RAG comparison markdown report
 └── openshift/                    # OpenShift manifests (ImageStream, BuildConfig,
                                   # Deployments, Services, Routes, CronJob, kustomize)
 ```

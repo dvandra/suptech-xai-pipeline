@@ -181,6 +181,16 @@ python run_demo.py
 make demo
 ```
 
+For Stage 6 RAG exploration (retrievers × models):
+
+```bash
+make rag
+# or
+python run_demo.py --with-rag
+```
+
+See also [`RAG_AND_MODELS.md`](RAG_AND_MODELS.md).
+
 ---
 
 ## 6. Quick map to code
