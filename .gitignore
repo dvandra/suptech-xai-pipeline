@@ -12,6 +12,7 @@ data/*.parquet
 data/*.csv
 data/*.json
 data/*.faiss
+data/rag_index/
 data/reports/
 !data/.gitkeep
 

@@ -109,7 +109,28 @@ OLLAMA_JUDGE_MODEL = os.getenv("OLLAMA_JUDGE_MODEL", OLLAMA_MODEL)
 # CoT prompt contract: v2 requires labelled STEP1..STEP4 blocks (see docs/LLM_AND_DATA.md).
 PROMPT_VERSION = os.getenv("PROMPT_VERSION", "v2")
 
+# --- RAG exploration (Stage 6) ---------------------------------------------
+RAG_CORPUS_DIR = ROOT / "rag" / "corpus"
+RAG_INDEX_DIR = DATA_DIR / "rag_index"
+RAG_RESULTS_JSON = DATA_DIR / "rag_results.json"
+RAG_COMPARISON_MD = REPORTS_DIR / "rag_comparison_report.md"
+# Comma-separated Ollama model tags to compare (offline fallback skips real calls).
+RAG_MODELS = [
+    m.strip()
+    for m in os.getenv("RAG_MODELS", "llama3,mistral,qwen2.5").split(",")
+    if m.strip()
+]
+RAG_TOP_K = int(os.getenv("RAG_TOP_K", "4"))
+RAG_RETRIEVERS = [
+    r.strip()
+    for r in os.getenv(
+        "RAG_RETRIEVERS", "dense,hybrid,filtered,corrective,graph"
+    ).split(",")
+    if r.strip()
+]
+
 
 def ensure_dirs() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    RAG_INDEX_DIR.mkdir(parents=True, exist_ok=True)
