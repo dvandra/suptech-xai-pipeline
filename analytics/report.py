@@ -133,6 +133,28 @@ def render(metrics: dict) -> str:
         parts.append("<h2>Risk-rating distribution</h2>")
         parts.append(_bar_rows(list(llm["rating_distribution"].items()), fmt=str))
 
+    steps = ev.get("llm_step_validation", {})
+    if steps.get("n"):
+        parts.append("<h2>LLM step-by-step CoT validation</h2><div class='grid'>")
+        parts.append(_kpi("all steps OK", f'{(steps.get("all_steps_ok_rate") or 0)*100:.0f}%'))
+        parts.append(_kpi("STEP1", f'{(steps.get("step1_ok_rate") or 0)*100:.0f}%'))
+        parts.append(_kpi("STEP2", f'{(steps.get("step2_ok_rate") or 0)*100:.0f}%'))
+        parts.append(_kpi("STEP3", f'{(steps.get("step3_ok_rate") or 0)*100:.0f}%'))
+        parts.append(_kpi("STEP4", f'{(steps.get("step4_ok_rate") or 0)*100:.0f}%'))
+        parts.append("</div>")
+
+    improve = ev.get("llm_prompt_improvement", {})
+    if improve.get("n"):
+        parts.append("<h2>Prompt improvement (structure)</h2><div class='grid'>")
+        parts.append(_kpi("v2 structure", improve.get("v2_structure_score", "-")))
+        parts.append(_kpi("v1 structure", improve.get("v1_structure_score", "-")))
+        parts.append(_kpi("lift (v2−v1)", improve.get("structure_lift", "-")))
+        parts.append("</div>")
+        parts.append(
+            f'<p class="sub">Prompt version <code>{html.escape(str(improve.get("current_prompt_version","")))}</code> '
+            f'&middot; explain model <code>{html.escape(config.OLLAMA_MODEL)}</code></p>'
+        )
+
     # Drift
     if drift:
         parts.append("<h2>Model &amp; data drift (PSI)</h2><div class='grid'>")

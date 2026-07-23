@@ -64,8 +64,18 @@ def main():
     print("\n=== Stage 5: analytics & AI evaluation ===")
     from analytics.run_analytics import run as run_analytics
 
-    metrics = run_analytics()
+    metrics = run_analytics(
+        run_meta={
+            "generator_count": args.count,
+            "invalid_rate": args.invalid_rate,
+            "anomaly_rate": args.anomaly_rate,
+            "seed": args.seed,
+            "xai_engine": explain["engine"],
+            "prompt_version": explain.get("prompt_version", config.PROMPT_VERSION),
+        }
+    )
     det = metrics["evaluation"]["detection"]
+    steps = metrics["evaluation"].get("llm_step_validation", {})
 
     print("\n=== Summary ===")
     print(f"  submissions ingested : {ingest['total']}")
@@ -73,9 +83,12 @@ def main():
     print(f"  cleaned & analysed   : {embed['rows']}")
     print(f"  anomalies flagged    : {explain['anomalies']}")
     print(f"  XAI engine           : {explain['engine']}")
+    print(f"  prompt version       : {explain.get('prompt_version')}")
     print(f"  detector P/R/F1      : {det['precision']}/{det['recall']}/{det['f1']}")
+    print(f"  CoT step-pass rate   : {steps.get('all_steps_ok_rate')}")
     print(f"  anomaly report       : {config.ANOMALY_REPORT}")
     print(f"  analytics report     : {config.ANALYTICS_HTML}")
+    print(f"  dev+analytics report : {config.DEV_ANALYTICS_MD}")
     print(f"  metrics json         : {config.METRICS_JSON}")
 
 

@@ -8,7 +8,7 @@ help:
 	@echo "Targets:"
 	@echo "  install     Create .venv and install core dependencies"
 	@echo "  demo        Run the full pipeline end-to-end locally (no external services)"
-	@echo "  analytics   Recompute analytics + AI-evaluation metrics and HTML report"
+	@echo "  analytics   Recompute analytics + AI-evaluation metrics and HTML/MD reports"
 	@echo "  api         Serve the metrics API (http://localhost:8001)"
 	@echo "  dashboard   Launch the Streamlit analytics dashboard"
 	@echo "  fmr         Run the FMR mock API server (http://localhost:8000)"

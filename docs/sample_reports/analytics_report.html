@@ -1,0 +1,69 @@
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--ink:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;
+--hi:#f87171;--md:#fbbf24;--lo:#4ade80}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:32px}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:18px;margin:28px 0 12px;
+border-bottom:1px solid #334155;padding-bottom:6px}
+.sub{color:var(--mut);margin:0 0 24px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.card{background:var(--card);border:1px solid #334155;border-radius:12px;padding:16px}
+.kpi{font-size:28px;font-weight:700;color:var(--acc)}
+.kpi.hi{color:var(--hi)}.label{color:var(--mut);font-size:13px;text-transform:uppercase;
+letter-spacing:.04em}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #334155}
+th{color:var(--mut);font-weight:600}
+.bar{height:9px;background:#334155;border-radius:5px;overflow:hidden}
+.bar>span{display:block;height:100%;background:var(--acc)}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.stable{background:#064e3b;color:#4ade80}.moderate{background:#78350f;color:#fbbf24}
+.major{background:#7f1d1d;color:#f87171}
+.foot{color:var(--mut);font-size:12px;margin-top:32px}
+</style>
+<h1>SupTech-XAI &mdash; Analytics &amp; AI Evaluation</h1>
+<p class="sub">Dataflow <code>DEMO:BANKING_FLOWS_FLOW(1.0)</code> &middot; produced by the Stage&nbsp;5 analytics layer</p>
+<h2>Supervisory overview</h2><div class='grid'>
+<div class="card"><div class="kpi">433</div><div class="label">observations</div></div>
+<div class="card"><div class="kpi hi">29</div><div class="label">anomalies</div></div>
+<div class="card"><div class="kpi">6.7%</div><div class="label">anomaly rate</div></div>
+<div class="card"><div class="kpi">7,487,175,398</div><div class="label">flagged value</div></div>
+<div class="card"><div class="kpi">13.4%</div><div class="label">FMR rejection rate</div></div>
+</div>
+<h2>Flagged value by jurisdiction</h2>
+<table><tbody><tr><td>US</td><td style="width:55%"><div class="bar"><span style="width:100.0%"></span></div></td><td>2,003,778,927</td></tr><tr><td>GB</td><td style="width:55%"><div class="bar"><span style="width:80.4%"></span></div></td><td>1,610,674,068</td></tr><tr><td>CH</td><td style="width:55%"><div class="bar"><span style="width:56.1%"></span></div></td><td>1,124,947,188</td></tr><tr><td>DE</td><td style="width:55%"><div class="bar"><span style="width:43.3%"></span></div></td><td>868,482,803</td></tr><tr><td>FR</td><td style="width:55%"><div class="bar"><span style="width:32.3%"></span></div></td><td>647,224,118</td></tr><tr><td>IN</td><td style="width:55%"><div class="bar"><span style="width:32.2%"></span></div></td><td>644,892,988</td></tr><tr><td>SG</td><td style="width:55%"><div class="bar"><span style="width:19.4%"></span></div></td><td>387,895,010</td></tr><tr><td>JP</td><td style="width:55%"><div class="bar"><span style="width:9.9%"></span></div></td><td>199,280,297</td></tr></tbody></table>
+<h2>Anomalies by asset class</h2>
+<table><thead><tr><th>asset class</th><th>observations</th><th>anomalies</th><th>anomaly rate</th></tr></thead><tbody><tr><td>DERIVATIVE</td><td>100</td><td>10</td><td>10.0%</td></tr><tr><td>LOAN</td><td>94</td><td>8</td><td>8.5%</td></tr><tr><td>FX</td><td>78</td><td>5</td><td>6.4%</td></tr><tr><td>DEPOSIT</td><td>84</td><td>3</td><td>3.6%</td></tr><tr><td>SECURITY</td><td>77</td><td>3</td><td>3.9%</td></tr></tbody></table>
+<h2>AI evaluation &mdash; anomaly detector</h2><div class='grid'>
+<div class="card"><div class="kpi">1.0</div><div class="label">precision</div></div>
+<div class="card"><div class="kpi">1.0</div><div class="label">recall</div></div>
+<div class="card"><div class="kpi">1.0</div><div class="label">F1</div></div>
+<div class="card"><div class="kpi">1.0</div><div class="label">accuracy</div></div>
+</div>
+<table><thead><tr><th></th><th>predicted +</th><th>predicted -</th></tr></thead><tbody><tr><td>actual +</td><td>29</td><td>0</td></tr><tr><td>actual -</td><td>0</td><td>404</td></tr></tbody></table>
+<p class="sub">F1-optimal threshold at <b>sigma=0.899</b> (F1=1.0); currently configured sigma=1.5.</p>
+<h2>AI evaluation &mdash; LLM explanations</h2><div class='grid'>
+<div class="card"><div class="kpi">100%</div><div class="label">output validity</div></div>
+<div class="card"><div class="kpi">100%</div><div class="label">faithfulness recall</div></div>
+<div class="card"><div class="kpi">5.0/5</div><div class="label">LLM-as-judge (rule-based)</div></div>
+</div>
+<h2>Risk-rating distribution</h2>
+<table><tbody><tr><td>HIGH</td><td style="width:55%"><div class="bar"><span style="width:100.0%"></span></div></td><td>29</td></tr></tbody></table>
+<h2>LLM step-by-step CoT validation</h2><div class='grid'>
+<div class="card"><div class="kpi">100%</div><div class="label">all steps OK</div></div>
+<div class="card"><div class="kpi">100%</div><div class="label">STEP1</div></div>
+<div class="card"><div class="kpi">100%</div><div class="label">STEP2</div></div>
+<div class="card"><div class="kpi">100%</div><div class="label">STEP3</div></div>
+<div class="card"><div class="kpi">100%</div><div class="label">STEP4</div></div>
+</div>
+<h2>Prompt improvement (structure)</h2><div class='grid'>
+<div class="card"><div class="kpi">1.0</div><div class="label">v2 structure</div></div>
+<div class="card"><div class="kpi">0.0</div><div class="label">v1 structure</div></div>
+<div class="card"><div class="kpi">1.0</div><div class="label">lift (v2−v1)</div></div>
+</div>
+<p class="sub">Prompt version <code>v2</code> &middot; explain model <code>llama3</code></p>
+<h2>Model &amp; data drift (PSI)</h2><div class='grid'>
+<div class="card"><div class="kpi">0.0677</div><div class="label">category PSI</div><div style="margin-top:8px"><span class="badge stable">stable</span></div></div>
+<div class="card"><div class="kpi">0.0486</div><div class="label">score PSI</div><div style="margin-top:8px"><span class="badge stable">stable</span></div></div>
+</div>
+<p class="foot">Synthetic data only &middot; educational simulation.</p>
