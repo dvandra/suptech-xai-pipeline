@@ -129,6 +129,11 @@ RAG_RETRIEVERS = [
     if r.strip()
 ]
 
+# --- Audit / explainability trail (cross-cutting) --------------------------
+AUDIT_JSONL = DATA_DIR / "audit_trail.jsonl"
+AUDIT_SUMMARY_JSON = DATA_DIR / "audit_summary.json"
+AUDIT_REPORT_MD = REPORTS_DIR / "audit_report.md"
+
 
 def ensure_dirs() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
