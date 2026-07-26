@@ -9,5 +9,6 @@ rule-based CoT fallback — Ollama optional).
 | `analytics_report.html` | Visual analytics / AI-evaluation report |
 | `anomaly_report.md` | Supervisor-facing XAI anomaly explanations |
 | `rag_comparison_report.md` | Multi-retriever × multi-model RAG comparison |
+| `audit_report.md` | Per-step explainability audit (detector / LLM / RAG) |
 
-Regenerate locally with `make demo`, then copy from `data/reports/`.
+Regenerate locally with `make demo`, `make rag`, `make audit`, then copy from `data/reports/`.

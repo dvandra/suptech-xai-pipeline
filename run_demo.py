@@ -5,7 +5,7 @@ no containers, no Ollama). Each stage still uses its real implementation; where 
 heavy/optional dependency is missing it transparently falls back so the whole
 flow completes and produces a compliance report.
 
-    python run_demo.py [--count N] [--with-rag]
+    python run_demo.py [--count N] [--with-rag] [--with-audit]
 
 Stages:
     0. Generate mock SDMX submissions (with injected invalid + anomalous rows)
@@ -15,6 +15,7 @@ Stages:
     4. Explain flagged anomalies via Chain-of-Thought
     5. Analytics + AI evaluation (detector P/R/F1, LLM faithfulness, drift)
     6. RAG exploration (optional via --with-rag): multi-retriever × multi-model
+    7. Audit trail (optional via --with-audit): per-step XAI validation
 """
 from __future__ import annotations
 
@@ -47,6 +48,11 @@ def main():
         "--with-rag",
         action="store_true",
         help="Also run Stage 6 RAG comparison (retrievers × models)",
+    )
+    ap.add_argument(
+        "--with-audit",
+        action="store_true",
+        help="Build per-step explainability audit trail (detector / LLM / RAG)",
     )
     args = ap.parse_args()
 
@@ -91,6 +97,13 @@ def main():
         rag_payload = run_rag()
         rag_overall = rag_payload.get("summary", {}).get("overall", {})
 
+    audit_summary = None
+    if args.with_audit:
+        print("\n=== Stage 7: explainability & audit trail ===")
+        from audit.run_audit import run as run_audit
+
+        audit_summary = run_audit()
+
     print("\n=== Summary ===")
     print(f"  submissions ingested : {ingest['total']}")
     print(f"  rejected by FMR      : {ingest['rejected']}")
@@ -110,6 +123,12 @@ def main():
             f"{rag_overall.get('faithfulness_proxy')}"
         )
         print(f"  RAG comparison report: {config.RAG_COMPARISON_MD}")
+    if audit_summary is not None:
+        print(
+            f"  audit pass rate      : {audit_summary.get('pass_rate')} "
+            f"({audit_summary.get('n_ok')}/{audit_summary.get('n_events')})"
+        )
+        print(f"  audit report         : {config.AUDIT_REPORT_MD}")
 
 
 if __name__ == "__main__":

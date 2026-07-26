@@ -86,6 +86,9 @@ detection on the series key — the same classes of checks a real FMR performs.
 >
 > Sample RAG comparison report:
 > **[`docs/sample_reports/rag_comparison_report.md`](docs/sample_reports/rag_comparison_report.md)**.
+>
+> Explainability & audit trail (per-step LLM / RAG validation):
+> **[`docs/AUDIT_AND_XAI.md`](docs/AUDIT_AND_XAI.md)**.
 
 <details>
 <summary>ASCII fallback diagram</summary>
@@ -176,7 +179,8 @@ pipeline runs with **only the core dependencies** and **no network**:
 make install          # create .venv and install core deps
 make demo             # run stages 0–5 end-to-end on synthetic data
 make rag              # Stage 6: multi-retriever × multi-model RAG comparison
-# or: python run_demo.py --with-rag
+make audit            # Stage 7: per-step explainability audit trail
+# or: python run_demo.py --with-rag --with-audit
 ```
 
 Or manually:
@@ -344,6 +348,28 @@ Sample report: **[`docs/sample_reports/rag_comparison_report.md`](docs/sample_re
 
 ---
 
+## Explainability & audit (Stage 7)
+
+Every detector decision, LLM CoT explanation, and RAG retrieve/generate step can
+be written to a **structured audit trail** with reasoning steps and named
+validation checks — so outputs are reviewable without re-running models.
+
+```bash
+make audit
+# writes data/audit_trail.jsonl + data/audit_summary.json + data/reports/audit_report.md
+```
+
+| Pipeline | What is explained / checked |
+|---|---|
+| `detector` | Anomaly score decision |
+| `llm_xai` | STEP1–STEP4 CoT contract + rating parseability |
+| `rag` | Retrieval hit@k + answer citations / faithfulness |
+
+Full write-up: **[`docs/AUDIT_AND_XAI.md`](docs/AUDIT_AND_XAI.md)**.  
+Extend future use cases by registering a validator in `audit/validators.py`.
+
+---
+
 ## Repository layout
 
 ```
@@ -393,6 +419,13 @@ suptech-xai-pipeline/
 │   ├── evaluate_rag.py           # hit@k, citation, faithfulness proxy
 │   ├── run_rag.py                # multi-retriever × multi-model runner
 │   └── report.py                 # RAG comparison markdown report
+├── audit/                        # Stage 7 — explainability & audit trail
+│   ├── schema.py                 # AuditEvent / ReasoningStep / ValidationCheck
+│   ├── tracer.py                 # run-scoped event collector
+│   ├── validators.py             # pluggable checks (LLM, RAG, detector)
+│   ├── build.py                  # build trail from pipeline artefacts
+│   ├── report.py                 # markdown audit report
+│   └── run_audit.py              # orchestrator
 └── openshift/                    # OpenShift manifests (ImageStream, BuildConfig,
                                   # Deployments, Services, Routes, CronJob, kustomize)
 ```

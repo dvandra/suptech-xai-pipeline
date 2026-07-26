@@ -136,6 +136,18 @@ question tracks** (supervisory, risk narrative, treasury/liquidity).
 
 Full detail: [`RAG_AND_MODELS.md`](RAG_AND_MODELS.md).
 
+### Stage 7 — Explainability & audit (`audit/`)
+Normalises Stage 3–6 artefacts into a versioned **audit trail**:
+
+- Each event has `reasoning_steps[]` (human-readable explanation) and
+  `validations[]` (named pass/fail checks with severity).
+- Pipelines today: `detector`, `llm_xai`, `rag` (retrieve + generate).
+- Extensible via `VALIDATORS` registry for future use cases.
+- Outputs: `audit_trail.jsonl`, `audit_summary.json`, `audit_report.md`.
+- Run: `make audit` or `python run_demo.py --with-audit`.
+
+Full detail: [`AUDIT_AND_XAI.md`](AUDIT_AND_XAI.md).
+
 ## 7. Runs offline by design
 
 | Optional dependency | Fallback |
@@ -169,8 +181,9 @@ OpenShift/CRI-O), and stays Docker-compatible via `make infra-up CONTAINER_ENGIN
 
 For dataset shape, model defaults, and the LLM validation loop, see
 [`LLM_AND_DATA.md`](LLM_AND_DATA.md). For RAG variants and the multi-model
-matrix, see [`RAG_AND_MODELS.md`](RAG_AND_MODELS.md). Docs index:
-[`README.md`](README.md).
+matrix, see [`RAG_AND_MODELS.md`](RAG_AND_MODELS.md). For per-step
+explainability and the audit trail, see [`AUDIT_AND_XAI.md`](AUDIT_AND_XAI.md).
+Docs index: [`README.md`](README.md).
 
 ---
 
