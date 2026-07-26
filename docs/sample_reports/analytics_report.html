@@ -20,7 +20,7 @@ th{color:var(--mut);font-weight:600}
 .stable{background:#064e3b;color:#4ade80}.moderate{background:#78350f;color:#fbbf24}
 .major{background:#7f1d1d;color:#f87171}
 .foot{color:var(--mut);font-size:12px;margin-top:32px}
-</style>
+.chart{margin:16px 0;overflow:auto;border:1px solid #334155;border-radius:12px;background:#0f172a}</style>
 <h1>SupTech-XAI &mdash; Analytics &amp; AI Evaluation</h1>
 <p class="sub">Dataflow <code>DEMO:BANKING_FLOWS_FLOW(1.0)</code> &middot; produced by the Stage&nbsp;5 analytics layer</p>
 <h2>Supervisory overview</h2><div class='grid'>
@@ -62,6 +62,176 @@ th{color:var(--mut);font-weight:600}
 <div class="card"><div class="kpi">1.0</div><div class="label">lift (v2−v1)</div></div>
 </div>
 <p class="sub">Prompt version <code>v2</code> &middot; explain model <code>llama3</code></p>
+<h2>Charts &mdash; LLM, RAG &amp; audit</h2>
+<p class="sub">Inline SVG charts (also saved under <code>docs/sample_reports/charts/</code> for GitHub).</p>
+<div class="chart"><svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" viewBox="0 0 640 320" role="img" aria-label="LLM CoT step pass rates">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">LLM CoT step pass rates</text>
+<line x1="56" y1="40" x2="56" y2="264" stroke="#475569" stroke-width="1"/>
+<line x1="56" y1="264" x2="616" y2="264" stroke="#475569" stroke-width="1"/>
+<line x1="56" y1="264.0" x2="616" y2="264.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="268.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">0%</text>
+<line x1="56" y1="152.0" x2="616" y2="152.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="156.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">50%</text>
+<line x1="56" y1="40.0" x2="616" y2="40.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="44.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">100%</text>
+<rect x="64.0" y="40.0" width="102.4" height="224.0" rx="4" fill="#4ade80"/>
+<text x="115.2" y="34.0" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">100%</text>
+<text x="115.2" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">STEP1</text>
+<rect x="174.4" y="40.0" width="102.4" height="224.0" rx="4" fill="#4ade80"/>
+<text x="225.6" y="34.0" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">100%</text>
+<text x="225.6" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">STEP2</text>
+<rect x="284.8" y="40.0" width="102.4" height="224.0" rx="4" fill="#4ade80"/>
+<text x="336.0" y="34.0" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">100%</text>
+<text x="336.0" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">STEP3</text>
+<rect x="395.2" y="40.0" width="102.4" height="224.0" rx="4" fill="#4ade80"/>
+<text x="446.4" y="34.0" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">100%</text>
+<text x="446.4" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">STEP4</text>
+<rect x="505.6" y="40.0" width="102.4" height="224.0" rx="4" fill="#4ade80"/>
+<text x="556.8" y="34.0" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">100%</text>
+<text x="556.8" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">ALL</text>
+</svg></div>
+<div class="chart"><svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" viewBox="0 0 640 320" role="img" aria-label="LLM risk-rating distribution">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">LLM risk-rating distribution</text>
+<line x1="56" y1="40" x2="56" y2="264" stroke="#475569" stroke-width="1"/>
+<line x1="56" y1="264" x2="616" y2="264" stroke="#475569" stroke-width="1"/>
+<line x1="56" y1="264.0" x2="616" y2="264.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="268.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">0</text>
+<line x1="56" y1="152.0" x2="616" y2="152.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="156.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">14</text>
+<line x1="56" y1="40.0" x2="616" y2="40.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="44.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">29</text>
+<rect x="64.0" y="40.0" width="544.0" height="224.0" rx="4" fill="#38bdf8"/>
+<text x="336.0" y="34.0" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">29</text>
+<text x="336.0" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">HIGH</text>
+</svg></div>
+<div class="chart"><svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" viewBox="0 0 640 320" role="img" aria-label="LLM-as-judge scores (avg=5.0)">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">LLM-as-judge scores (avg=5.0)</text>
+<line x1="56" y1="40" x2="56" y2="264" stroke="#475569" stroke-width="1"/>
+<line x1="56" y1="264" x2="616" y2="264" stroke="#475569" stroke-width="1"/>
+<line x1="56" y1="264.0" x2="616" y2="264.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="268.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">0</text>
+<line x1="56" y1="152.0" x2="616" y2="152.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="156.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">14</text>
+<line x1="56" y1="40.0" x2="616" y2="40.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="44.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">29</text>
+<rect x="64.0" y="40.0" width="544.0" height="224.0" rx="4" fill="#fbbf24"/>
+<text x="336.0" y="34.0" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">29</text>
+<text x="336.0" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">5</text>
+</svg></div>
+<div class="chart"><svg xmlns="http://www.w3.org/2000/svg" width="640" height="300" viewBox="0 0 640 300" role="img" aria-label="Detector threshold sweep (F1 vs sigma)">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">Detector threshold sweep (F1 vs sigma)</text>
+<line x1="56" y1="40" x2="56" y2="252" stroke="#475569"/>
+<line x1="56" y1="252" x2="616" y2="252" stroke="#475569"/>
+<polyline fill="none" stroke="#38bdf8" stroke-width="2.5" points="56.0,221.5 78.4,219.0 100.8,219.0 123.2,219.0 145.5,215.8 168.0,213.7 190.4,211.0 212.7,211.0 235.2,164.8 257.6,129.0 279.9,98.3 302.4,98.3 324.8,40.0 347.1,40.0 369.6,40.0 391.9,40.0 414.3,40.0 436.8,40.0 459.1,40.0 481.5,40.0 504.0,40.0 526.3,40.0 548.8,40.0 571.2,60.0 593.5,179.3 616.0,252.0"/>
+<circle cx="56.0" cy="221.5" r="3.5" fill="#fbbf24"/>
+<circle cx="123.2" cy="219.0" r="3.5" fill="#fbbf24"/>
+<circle cx="190.4" cy="211.0" r="3.5" fill="#fbbf24"/>
+<circle cx="257.6" cy="129.0" r="3.5" fill="#fbbf24"/>
+<circle cx="324.8" cy="40.0" r="3.5" fill="#fbbf24"/>
+<circle cx="391.9" cy="40.0" r="3.5" fill="#fbbf24"/>
+<circle cx="459.1" cy="40.0" r="3.5" fill="#fbbf24"/>
+<circle cx="526.3" cy="40.0" r="3.5" fill="#fbbf24"/>
+<circle cx="593.5" cy="179.3" r="3.5" fill="#fbbf24"/>
+<text x="336.0" y="290" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">sigma</text>
+<text x="14" y="146.0" fill="#94a3b8" font-size="11" transform="rotate(-90 14,146.0)" font-family="system-ui,sans-serif">F1</text>
+</svg></div>
+<div class="chart"><svg xmlns="http://www.w3.org/2000/svg" width="720" height="340" viewBox="0 0 720 340" role="img" aria-label="RAG metrics by retriever">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">RAG metrics by retriever</text>
+<line x1="56" y1="276" x2="696" y2="276" stroke="#475569"/>
+<rect x="56" y="30" width="12" height="12" rx="2" fill="#38bdf8"/>
+<text x="72" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">hit@k</text>
+<rect x="146" y="30" width="12" height="12" rx="2" fill="#4ade80"/>
+<text x="162" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">citation</text>
+<rect x="236" y="30" width="12" height="12" rx="2" fill="#fbbf24"/>
+<text x="252" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">faithfulness</text>
+<rect x="75.2" y="73.3" width="27.9" height="202.7" rx="3" fill="#38bdf8"/>
+<rect x="105.1" y="105.0" width="27.9" height="171.0" rx="3" fill="#4ade80"/>
+<rect x="134.9" y="77.8" width="27.9" height="198.2" rx="3" fill="#fbbf24"/>
+<text x="120.0" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">dense</text>
+<rect x="203.2" y="73.3" width="27.9" height="202.7" rx="3" fill="#38bdf8"/>
+<rect x="233.1" y="105.0" width="27.9" height="171.0" rx="3" fill="#4ade80"/>
+<rect x="262.9" y="80.3" width="27.9" height="195.7" rx="3" fill="#fbbf24"/>
+<text x="248.0" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">hybrid</text>
+<rect x="331.2" y="48.0" width="27.9" height="228.0" rx="3" fill="#38bdf8"/>
+<rect x="361.1" y="105.0" width="27.9" height="171.0" rx="3" fill="#4ade80"/>
+<rect x="390.9" y="65.1" width="27.9" height="210.9" rx="3" fill="#fbbf24"/>
+<text x="376.0" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">filtered</text>
+<rect x="459.2" y="73.3" width="27.9" height="202.7" rx="3" fill="#38bdf8"/>
+<rect x="489.1" y="105.0" width="27.9" height="171.0" rx="3" fill="#4ade80"/>
+<rect x="518.9" y="80.3" width="27.9" height="195.7" rx="3" fill="#fbbf24"/>
+<text x="504.0" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">corrective</text>
+<rect x="587.2" y="73.3" width="27.9" height="202.7" rx="3" fill="#38bdf8"/>
+<rect x="617.1" y="105.0" width="27.9" height="171.0" rx="3" fill="#4ade80"/>
+<rect x="646.9" y="77.8" width="27.9" height="198.2" rx="3" fill="#fbbf24"/>
+<text x="632.0" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">graph</text>
+</svg></div>
+<div class="chart"><svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" viewBox="0 0 640 320" role="img" aria-label="RAG faithfulness proxy by model">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">RAG faithfulness proxy by model</text>
+<line x1="56" y1="40" x2="56" y2="264" stroke="#475569" stroke-width="1"/>
+<line x1="56" y1="264" x2="616" y2="264" stroke="#475569" stroke-width="1"/>
+<line x1="56" y1="264.0" x2="616" y2="264.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="268.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">0%</text>
+<line x1="56" y1="152.0" x2="616" y2="152.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="156.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">50%</text>
+<line x1="56" y1="40.0" x2="616" y2="40.0" stroke="#1e293b" stroke-width="1"/>
+<text x="48" y="44.0" fill="#94a3b8" font-size="11" text-anchor="end" font-family="system-ui,sans-serif">100%</text>
+<rect x="64.0" y="67.8" width="176.0" height="196.2" rx="4" fill="#c084fc"/>
+<text x="152.0" y="61.8" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">88%</text>
+<text x="152.0" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">llama3</text>
+<rect x="248.0" y="67.8" width="176.0" height="196.2" rx="4" fill="#c084fc"/>
+<text x="336.0" y="61.8" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">88%</text>
+<text x="336.0" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">mistral</text>
+<rect x="432.0" y="67.8" width="176.0" height="196.2" rx="4" fill="#c084fc"/>
+<text x="520.0" y="61.8" fill="#e2e8f0" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">88%</text>
+<text x="520.0" y="282" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">qwen2.5</text>
+</svg></div>
+<div class="chart"><svg xmlns="http://www.w3.org/2000/svg" width="720" height="340" viewBox="0 0 720 340" role="img" aria-label="RAG metrics by question track">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">RAG metrics by question track</text>
+<line x1="56" y1="276" x2="696" y2="276" stroke="#475569"/>
+<rect x="56" y="30" width="12" height="12" rx="2" fill="#38bdf8"/>
+<text x="72" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">hit@k</text>
+<rect x="146" y="30" width="12" height="12" rx="2" fill="#4ade80"/>
+<text x="162" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">recall@k</text>
+<rect x="236" y="30" width="12" height="12" rx="2" fill="#fbbf24"/>
+<text x="252" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">faithfulness</text>
+<rect x="88.0" y="108.8" width="47.8" height="167.2" rx="3" fill="#38bdf8"/>
+<rect x="137.8" y="108.8" width="47.8" height="167.2" rx="3" fill="#4ade80"/>
+<rect x="187.6" y="98.5" width="47.8" height="177.5" rx="3" fill="#fbbf24"/>
+<text x="162.7" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">supervisory</text>
+<rect x="301.3" y="48.0" width="47.8" height="228.0" rx="3" fill="#38bdf8"/>
+<rect x="351.1" y="48.0" width="47.8" height="228.0" rx="3" fill="#4ade80"/>
+<rect x="400.9" y="65.1" width="47.8" height="210.9" rx="3" fill="#fbbf24"/>
+<text x="376.0" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">risk</text>
+<rect x="514.7" y="48.0" width="47.8" height="228.0" rx="3" fill="#38bdf8"/>
+<rect x="564.4" y="48.0" width="47.8" height="228.0" rx="3" fill="#4ade80"/>
+<rect x="614.2" y="65.1" width="47.8" height="210.9" rx="3" fill="#fbbf24"/>
+<text x="589.3" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">treasury</text>
+</svg></div>
+<div class="chart"><svg xmlns="http://www.w3.org/2000/svg" width="720" height="340" viewBox="0 0 720 340" role="img" aria-label="Audit events by pipeline (ok vs failed)">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">Audit events by pipeline (ok vs failed)</text>
+<line x1="56" y1="276" x2="696" y2="276" stroke="#475569"/>
+<rect x="56" y="30" width="12" height="12" rx="2" fill="#4ade80"/>
+<text x="72" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">ok</text>
+<rect x="146" y="30" width="12" height="12" rx="2" fill="#f87171"/>
+<text x="162" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">failed</text>
+<rect x="88.0" y="249.1" width="72.7" height="26.9" rx="3" fill="#4ade80"/>
+<rect x="162.7" y="276.0" width="72.7" height="0.0" rx="3" fill="#f87171"/>
+<text x="162.7" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">detector</text>
+<rect x="301.3" y="249.1" width="72.7" height="26.9" rx="3" fill="#4ade80"/>
+<rect x="376.0" y="276.0" width="72.7" height="0.0" rx="3" fill="#f87171"/>
+<text x="376.0" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">llm_xai</text>
+<rect x="514.7" y="48.0" width="72.7" height="228.0" rx="3" fill="#4ade80"/>
+<rect x="589.3" y="253.8" width="72.7" height="22.2" rx="3" fill="#f87171"/>
+<text x="589.3" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">rag</text>
+</svg></div>
 <h2>Model &amp; data drift (PSI)</h2><div class='grid'>
 <div class="card"><div class="kpi">0.0677</div><div class="label">category PSI</div><div style="margin-top:8px"><span class="badge stable">stable</span></div></div>
 <div class="card"><div class="kpi">0.0486</div><div class="label">score PSI</div><div style="margin-top:8px"><span class="badge stable">stable</span></div></div>

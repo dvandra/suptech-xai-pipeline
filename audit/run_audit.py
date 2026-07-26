@@ -17,6 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
+from analytics.charts import write_charts  # noqa: E402
 from audit.build import build_full_audit  # noqa: E402
 from audit.report import load_sample_events, write as write_report  # noqa: E402
 
@@ -28,6 +29,7 @@ def run(run_id: str | None = None) -> dict:
     # Prefer mixed sample from flushed JSONL
     samples = load_sample_events(6) or samples
     path = write_report(summary, sample_events=samples)
+    write_charts(audit=summary)
     print(f"[audit] trail   -> {config.AUDIT_JSONL}")
     print(f"[audit] summary -> {config.AUDIT_SUMMARY_JSON}")
     print(f"[audit] report  -> {path}")

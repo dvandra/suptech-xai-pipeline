@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="340" viewBox="0 0 720 340" role="img" aria-label="RAG metrics by question track">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">RAG metrics by question track</text>
+<line x1="56" y1="276" x2="696" y2="276" stroke="#475569"/>
+<rect x="56" y="30" width="12" height="12" rx="2" fill="#38bdf8"/>
+<text x="72" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">hit@k</text>
+<rect x="146" y="30" width="12" height="12" rx="2" fill="#4ade80"/>
+<text x="162" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">recall@k</text>
+<rect x="236" y="30" width="12" height="12" rx="2" fill="#fbbf24"/>
+<text x="252" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">faithfulness</text>
+<rect x="88.0" y="108.8" width="47.8" height="167.2" rx="3" fill="#38bdf8"/>
+<rect x="137.8" y="108.8" width="47.8" height="167.2" rx="3" fill="#4ade80"/>
+<rect x="187.6" y="98.5" width="47.8" height="177.5" rx="3" fill="#fbbf24"/>
+<text x="162.7" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">supervisory</text>
+<rect x="301.3" y="48.0" width="47.8" height="228.0" rx="3" fill="#38bdf8"/>
+<rect x="351.1" y="48.0" width="47.8" height="228.0" rx="3" fill="#4ade80"/>
+<rect x="400.9" y="65.1" width="47.8" height="210.9" rx="3" fill="#fbbf24"/>
+<text x="376.0" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">risk</text>
+<rect x="514.7" y="48.0" width="47.8" height="228.0" rx="3" fill="#38bdf8"/>
+<rect x="564.4" y="48.0" width="47.8" height="228.0" rx="3" fill="#4ade80"/>
+<rect x="614.2" y="65.1" width="47.8" height="210.9" rx="3" fill="#fbbf24"/>
+<text x="589.3" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">treasury</text>
+</svg>

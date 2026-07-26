@@ -39,6 +39,29 @@ OpenShift-ready image + manifests · offline fallbacks for every heavy dependenc
 | Anomaly / XAI | [`docs/sample_reports/anomaly_report.md`](docs/sample_reports/anomaly_report.md) |
 | RAG comparison | [`docs/sample_reports/rag_comparison_report.md`](docs/sample_reports/rag_comparison_report.md) |
 | Audit / explainability | [`docs/sample_reports/audit_report.md`](docs/sample_reports/audit_report.md) |
+| **Chart gallery (SVG)** | [`docs/sample_reports/charts/`](docs/sample_reports/charts/) |
+
+### Chart gallery (LLM · RAG · audit)
+
+Reviewers can skim graphs on GitHub without starting Streamlit:
+
+| Chart | Preview |
+|---|---|
+| LLM CoT step pass rates | ![LLM steps](docs/sample_reports/charts/llm_step_pass_rates.svg) |
+| RAG metrics by retriever | ![RAG retrievers](docs/sample_reports/charts/rag_by_retriever.svg) |
+| RAG faithfulness by model | ![RAG models](docs/sample_reports/charts/rag_faithfulness_by_model.svg) |
+| RAG by question track | ![RAG tracks](docs/sample_reports/charts/rag_by_track.svg) |
+| Audit ok vs failed | ![Audit](docs/sample_reports/charts/audit_by_pipeline.svg) |
+
+**Live dashboard** (interactive):
+
+```bash
+pip install streamlit          # once
+make analytics && make rag && make audit   # refresh metrics
+make dashboard                 # http://localhost:8501
+```
+
+Tabs: Supervisory · LLM/XAI · RAG comparison · Drift · Audit trail.
 
 ### Documentation
 

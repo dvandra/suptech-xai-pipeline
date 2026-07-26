@@ -11,6 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
+from analytics.charts import write_charts  # noqa: E402
 from rag.evaluate_rag import aggregate, score_result  # noqa: E402
 from rag.index import build_index  # noqa: E402
 from rag.pipelines import CASES, run_case  # noqa: E402
@@ -58,6 +59,8 @@ def run(
     }
     config.RAG_RESULTS_JSON.write_text(json.dumps(payload, indent=2, default=str))
     write_comparison_report(payload)
+    # Refresh chart gallery with latest RAG (+ existing metrics/audit if present)
+    write_charts(rag=payload)
     overall = summary.get("overall", {})
     print(f"[rag] results -> {config.RAG_RESULTS_JSON}")
     print(f"[rag] report  -> {config.RAG_COMPARISON_MD}")

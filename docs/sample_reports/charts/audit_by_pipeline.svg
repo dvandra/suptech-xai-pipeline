@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="340" viewBox="0 0 720 340" role="img" aria-label="Audit events by pipeline (ok vs failed)">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="56" y="24" fill="#e2e8f0" font-size="15" font-family="system-ui,sans-serif" font-weight="600">Audit events by pipeline (ok vs failed)</text>
+<line x1="56" y1="276" x2="696" y2="276" stroke="#475569"/>
+<rect x="56" y="30" width="12" height="12" rx="2" fill="#4ade80"/>
+<text x="72" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">ok</text>
+<rect x="146" y="30" width="12" height="12" rx="2" fill="#f87171"/>
+<text x="162" y="40" fill="#94a3b8" font-size="11" font-family="system-ui,sans-serif">failed</text>
+<rect x="88.0" y="249.1" width="72.7" height="26.9" rx="3" fill="#4ade80"/>
+<rect x="162.7" y="276.0" width="72.7" height="0.0" rx="3" fill="#f87171"/>
+<text x="162.7" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">detector</text>
+<rect x="301.3" y="249.1" width="72.7" height="26.9" rx="3" fill="#4ade80"/>
+<rect x="376.0" y="276.0" width="72.7" height="0.0" rx="3" fill="#f87171"/>
+<text x="376.0" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">llm_xai</text>
+<rect x="514.7" y="48.0" width="72.7" height="228.0" rx="3" fill="#4ade80"/>
+<rect x="589.3" y="253.8" width="72.7" height="22.2" rx="3" fill="#f87171"/>
+<text x="589.3" y="294" fill="#94a3b8" font-size="11" text-anchor="middle" font-family="system-ui,sans-serif">rag</text>
+</svg>

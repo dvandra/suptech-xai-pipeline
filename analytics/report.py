@@ -63,10 +63,13 @@ def _bar_rows(items: list[tuple[str, float]], fmt=str) -> str:
     return f"<table><tbody>{out}</tbody></table>"
 
 
-def render(metrics: dict) -> str:
+def render(metrics: dict, chart_svgs: dict | None = None) -> str:
+    from analytics.charts import build_chart_svgs
+
     sup = metrics.get("supervisory", {})
     ev = metrics.get("evaluation", {})
     drift = metrics.get("drift", {})
+    chart_svgs = chart_svgs if chart_svgs is not None else build_chart_svgs(metrics=metrics)
 
     totals = sup.get("totals", {})
     det = ev.get("detection", {})
@@ -74,7 +77,10 @@ def render(metrics: dict) -> str:
     llm = ev.get("llm_output", {})
     judge = ev.get("llm_as_judge", {})
 
-    parts = [f"<style>{_CSS}</style>", "<h1>SupTech-XAI &mdash; Analytics &amp; AI Evaluation</h1>",
+    parts = [f"<style>{_CSS}"
+             f".chart{{margin:16px 0;overflow:auto;border:1px solid #334155;"
+             f"border-radius:12px;background:#0f172a}}</style>",
+             "<h1>SupTech-XAI &mdash; Analytics &amp; AI Evaluation</h1>",
              f'<p class="sub">Dataflow <code>{html.escape(config.DATAFLOW_REF)}</code> '
              f'&middot; produced by the Stage&nbsp;5 analytics layer</p>']
 
@@ -154,6 +160,27 @@ def render(metrics: dict) -> str:
             f'<p class="sub">Prompt version <code>{html.escape(str(improve.get("current_prompt_version","")))}</code> '
             f'&middot; explain model <code>{html.escape(config.OLLAMA_MODEL)}</code></p>'
         )
+
+    # Embedded SVG charts (LLM / RAG / audit) for reviewers
+    gallery_keys = [
+        "llm_step_pass_rates.svg",
+        "llm_risk_rating_distribution.svg",
+        "llm_judge_score_distribution.svg",
+        "detector_threshold_f1.svg",
+        "rag_by_retriever.svg",
+        "rag_faithfulness_by_model.svg",
+        "rag_by_track.svg",
+        "audit_by_pipeline.svg",
+    ]
+    embedded = [(k, chart_svgs[k]) for k in gallery_keys if k in chart_svgs]
+    if embedded:
+        parts.append("<h2>Charts &mdash; LLM, RAG &amp; audit</h2>")
+        parts.append(
+            '<p class="sub">Inline SVG charts (also saved under '
+            '<code>docs/sample_reports/charts/</code> for GitHub).</p>'
+        )
+        for name, svg in embedded:
+            parts.append(f'<div class="chart">{svg}</div>')
 
     # Drift
     if drift:
