@@ -2,7 +2,7 @@
 #   make infra-up CONTAINER_ENGINE="docker"
 CONTAINER_ENGINE ?= podman
 
-.PHONY: help install demo analytics rag audit charts api dashboard produce fmr clean infra-up infra-down oc-build oc-deploy oc-undeploy
+.PHONY: help install demo analytics rag audit api dashboard produce fmr clean infra-up infra-down oc-build oc-deploy oc-undeploy
 
 help:
 	@echo "Targets:"
@@ -11,7 +11,6 @@ help:
 	@echo "  analytics   Recompute analytics + AI-evaluation metrics and HTML/MD reports"
 	@echo "  rag         Stage 6: multi-retriever × multi-model RAG comparison"
 	@echo "  audit       Build explainability audit trail for detector / LLM / RAG steps"
-	@echo "  charts      Render SVG chart gallery (LLM / RAG / audit) for GitHub reviewers"
 	@echo "  api         Serve the metrics API (http://localhost:8001)"
 	@echo "  dashboard   Launch the Streamlit analytics dashboard"
 	@echo "  fmr         Run the FMR mock API server (http://localhost:8000)"
@@ -39,9 +38,6 @@ rag:
 
 audit:
 	python3 -m audit.run_audit
-
-charts:
-	python3 -m analytics.charts
 
 api:
 	uvicorn analytics.metrics_api:app --reload --port 8001

@@ -10,9 +10,5 @@ rule-based CoT fallback — Ollama optional).
 | `anomaly_report.md` | Supervisor-facing XAI anomaly explanations |
 | `rag_comparison_report.md` | Multi-retriever × multi-model RAG comparison |
 | `audit_report.md` | Per-step explainability audit (detector / LLM / RAG) |
-| `charts/` | SVG chart gallery (LLM steps, RAG by retriever/model/track, audit) |
 
-Regenerate locally with `make demo`, `make rag`, `make audit`, `make charts`
-(charts also copy into this folder automatically).
-
-Interactive dashboard: `make dashboard` (requires `pip install streamlit`).
+Regenerate locally with `make demo`, `make rag`, `make audit`, then copy from `data/reports/`.

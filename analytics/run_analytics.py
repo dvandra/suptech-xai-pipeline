@@ -18,7 +18,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
 from analytics import (  # noqa: E402
-    charts,
     dev_report,
     drift,
     evaluation,
@@ -49,7 +48,6 @@ def run(run_meta: dict | None = None) -> dict:
     config.METRICS_JSON.write_text(json.dumps(metrics, indent=2, default=str))
     report.write(metrics)
     dev_report.write(metrics, run_meta=run_meta)
-    chart_paths = charts.write_charts(metrics=metrics)
 
     det = metrics["evaluation"]["detection"]
     llm = metrics["evaluation"].get("llm_output", {})
@@ -58,7 +56,6 @@ def run(run_meta: dict | None = None) -> dict:
     print(f"[analytics] metrics     -> {config.METRICS_JSON}")
     print(f"[analytics] html report -> {config.ANALYTICS_HTML}")
     print(f"[analytics] dev report  -> {config.DEV_ANALYTICS_MD}")
-    print(f"[analytics] charts      -> {len(chart_paths)} SVGs in {charts.CHARTS_DIR}")
     print(
         f"[analytics] detector P/R/F1 = {det['precision']}/{det['recall']}/{det['f1']} "
         f"| LLM validity={llm.get('output_validity_rate')} "

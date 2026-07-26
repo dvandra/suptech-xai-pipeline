@@ -19,8 +19,6 @@ by any central bank or supervisory authority.
 make demo                              # Stages 0–5
 make rag                               # Stage 6 RAG comparison
 make audit                             # Stage 7 explainability audit trail
-make charts                            # SVG gallery for GitHub reviewers
-make dashboard                         # live Streamlit UI (pip install streamlit)
 python run_demo.py --with-rag --with-audit
 ```
 
